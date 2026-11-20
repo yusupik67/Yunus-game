@@ -66,10 +66,10 @@ html,body,#pet{touch-action:manipulation}
 .clicks{position:absolute;right:10px;top:8px;z-index:9;background:rgba(0,0,0,.4);color:#fff;font-weight:800;font-size:18px;padding:6px 14px;border-radius:16px;box-shadow:0 2px 6px #0004;pointer-events:none}
 .tap{font-weight:900;font-size:24px;color:#fff;text-shadow:0 2px 5px #000b;z-index:9;animation:tapup .7s ease-out forwards}
 @keyframes tapup{to{transform:translateY(-55px) scale(1.2);opacity:0}}
-.aura{position:absolute;left:50%;bottom:-3%;width:0;display:none;transform-origin:0 100%;pointer-events:none;--hue:0deg;animation:glow 1.8s ease-in-out infinite alternate}
+.aura{position:absolute;left:0;width:100%;bottom:-3%;display:none;transform-origin:50% 100%;pointer-events:none;--hue:0deg;animation:glow 1.8s ease-in-out infinite alternate}
 .aura.k-violet{--hue:28deg}
 @keyframes glow{from{filter:hue-rotate(var(--hue)) brightness(1)}to{filter:hue-rotate(var(--hue)) brightness(1.3)}}
-.aura img{position:absolute;left:0;bottom:0;height:100%;width:auto;max-width:none;transform:translateX(-50%);transform-origin:50% 100%}
+.aura img{position:absolute;left:50%;bottom:0;height:100%;width:auto;max-width:none;transform:translateX(-50%);transform-origin:50% 100%}
 .aura .a1{animation:auraA 1.1s ease-in-out infinite alternate}
 .aura .a2{mix-blend-mode:screen;opacity:.6;animation:auraB 1.7s ease-in-out infinite alternate}
 @keyframes auraA{0%{transform:translateX(-50%) scale(1,1) skewX(0deg)}50%{transform:translateX(-50%) scale(1.04,1.09) skewX(1.5deg)}100%{transform:translateX(-50%) scale(.98,1.14) skewX(-1.5deg)}}
@@ -93,6 +93,31 @@ html,body,#pet{touch-action:manipulation}
 .thumb.ht img{max-width:60px;max-height:56px}
 .msg{min-height:20px;font-size:14px;margin-top:6px;color:#444}
 .msg.ok{color:#1b8a3a}.msg.err{color:#c62828}
+
+/* шаринган */
+.eyes{position:absolute;left:51.7%;top:50.8%;width:67%;transform:translate(-50%,-50%);display:none;pointer-events:none;animation:eyeGlow 2.2s ease-in-out infinite alternate}
+.eyes img{display:block;width:100%}
+.eyes .ec{position:absolute;left:0;top:0;opacity:0}
+.eyes .eo{animation:blinkO 6s infinite}
+.eyes .ec{animation:blinkC 6s infinite}
+@keyframes blinkO{0%,88%{opacity:1}89%,90%{opacity:0}91%,93%{opacity:1}94%,96%{opacity:0}97%,100%{opacity:1}}
+@keyframes blinkC{0%,88%{opacity:0}89%,90%{opacity:1}91%,93%{opacity:0}94%,96%{opacity:1}97%,100%{opacity:0}}
+@keyframes eyeGlow{from{filter:drop-shadow(0 0 1px rgba(255,30,30,.25))}to{filter:drop-shadow(0 0 5px rgba(255,40,40,.6))}}
+.thumb.et{width:96px;height:48px;background:#d9a79d}
+.thumb.et img{max-width:90px;max-height:44px}
+.thumb.k-black{background:#9a98c8}
+/* новые ауры */
+.aura.k-black .a1{animation:smokeA 3.6s ease-in-out infinite alternate}
+.aura.k-black .a2{mix-blend-mode:normal;animation:smokeB 5.2s ease-in-out infinite alternate}
+@keyframes smokeA{0%{transform:translateX(-50%) scale(1,1) rotate(-1.5deg)}50%{transform:translateX(-50%) scale(1.05,1.1) rotate(1deg)}100%{transform:translateX(-50%) scale(.98,1.06) translateY(-1.5%) rotate(2deg)}}
+@keyframes smokeB{0%{transform:translateX(-50%) scaleX(-1) scale(1.1,1) rotate(2deg);opacity:.35}50%{transform:translateX(-50%) scaleX(-1) scale(1,1.14) translateY(-3%) rotate(-1deg);opacity:.6}100%{transform:translateX(-50%) scaleX(-1) scale(1.12,1.08) rotate(-2deg);opacity:.4}}
+.aura.k-plasma{animation:plasmaGlow 2.4s ease-in-out infinite alternate}
+@keyframes plasmaGlow{from{filter:hue-rotate(-20deg) brightness(1)}to{filter:hue-rotate(20deg) brightness(1.3)}}
+.aura.k-plasma .a1{animation:plasmaA .9s ease-in-out infinite alternate}
+@keyframes plasmaA{0%{transform:translateX(-50%) scale(1,1)}50%{transform:translateX(-50%) scale(1.03,1.05) skewX(1deg)}100%{transform:translateX(-50%) scale(.98,1.08) skewX(-1deg)}}
+/* журнал */
+.log ul{margin:2px 0 10px 18px;padding:0;font-size:14px;line-height:1.45;color:#333}
+.log .ver{font-weight:800;font-size:15px;color:#4b2fd0;margin-top:8px}
 
 /* мини-игра */
 #game{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
@@ -147,6 +172,7 @@ html,body,#pet{touch-action:manipulation}
       <div class="aura" id="aura"><img class="a1" alt=""><img class="a2" alt=""></div>
       <div class="pet" id="pet">
         <div class="photo" id="photo"><img src="yunus.jpg" alt="Юнус" draggable="false"></div>
+        <div class="eyes" id="eyes"><img class="eo" src="sharingan-open.png" alt=""><img class="ec" src="sharingan-closed.png" alt=""></div>
         <div class="mouth" id="mouth"></div>
         <img class="hair" id="hair" alt="">
         <div class="glasses" id="glasses"></div>
@@ -175,7 +201,7 @@ html,body,#pet{touch-action:manipulation}
     <h1>Мой Говорящий<br>Юнус</h1>
     <div class="pic"><img src="yunus.jpg" alt=""></div>
     <button id="startBtn">▶ Играть</button>
-    <div class="ver">версия 1.1.2 (патч 2)</div>
+    <div class="ver">версия 1.1.4</div>
   </div>
 </div>
 
@@ -186,7 +212,7 @@ const cl = v => Math.max(0, Math.min(100, v));
 
 /* ---------- состояние ---------- */
 const KEY = 'moy_govoryashchiy_yunus_v1';
-const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], t:Date.now()};
+const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, seenVer:'', t:Date.now()};
 try { const r = JSON.parse(localStorage.getItem(KEY)); if (r) Object.assign(S, r); } catch (e) {}
 S.sleeping = false;
 (function offline() {
@@ -227,7 +253,7 @@ function render() {
   $('glasses').textContent = S.glasses ? (HATS.find(h => h.id === S.glasses) || {}).e || '' : '';
   $('app').classList.toggle('sleeping', S.sleeping);
   $('sleepBtn').innerHTML = S.sleeping ? '☀️<small>Будить</small>' : '😴<small>Спать</small>';
-  updateClicks(); renderAura(); renderHair(); $('nameplate').textContent = S.name;
+  updateClicks(); renderAura(); renderHair(); renderEyes(); $('nameplate').textContent = S.name;
 }
 
 /* ---------- речь ---------- */
@@ -275,7 +301,10 @@ const AURAS = [
   {id:'blue',   n:'Синяя',      req:4000,  h:1.4},
   {id:'red',    n:'Красная',    req:7000,  h:1.35},
   {id:'gold',   n:'Золотая',    req:13000, h:1.55},
-  {id:'pink',   n:'Розовая',    req:20000, h:1.5}
+  {id:'pink',   n:'Розовая',    req:20000, h:1.5},
+  {id:'black',  n:'Чёрная',        req:50000, h:1.3},
+  {id:'fire',   n:'Зелёный огонь', req:66000, h:1.25},
+  {id:'plasma', n:'Зелёная плазма', secret:true, h:1.15, w:170}
 ];
 const fmt = n => Number(n).toLocaleString('ru-RU');
 function updateClicks() { $('clicks').textContent = '👆 ' + fmt(S.clicks || 0); }
@@ -285,7 +314,7 @@ function renderAura() {
   if (!a) { el.style.display = 'none'; curAura = ''; return; }
   if (curAura !== a.id) {
     curAura = a.id;
-    el.querySelectorAll('img').forEach(i => i.src = 'aura-' + a.id + '.png');
+    el.querySelectorAll('img').forEach(i => { i.src = 'aura-' + a.id + '.png'; i.style.width = a.w ? a.w + '%' : 'auto'; });
     el.className = 'aura k-' + a.id; el.style.height = (a.h * 100) + '%';
   }
   el.style.display = 'block';
@@ -319,7 +348,39 @@ function renderHair() {
 /* ---------- кличка и коды ---------- */
 // Коды: 'слово': {coins:100, clicks:500, unlock:['aura:gold','hair:h1','item:crown'], msg:'Текст'}
 // Сейчас кодов нет — добавляются сюда позже.
-const CODES = {};
+const VERSION = '1.1.4';
+const CODES = {
+  'sharingan44':  {unlock:['eyes:sharingan'], msg:'Шаринган открыт! Он в магазине, раздел «Глаза»'},
+  'yunusforever': {unlock:['aura:plasma'],    msg:'Зелёная плазма открыта! Она в магазине, раздел «Ауры»'}
+};
+const EYES = [{id:'sharingan', n:'Шаринган'}];
+function renderEyes() { $('eyes').style.display = (S.eyes === 'sharingan' && S.ownedEyes.sharingan) ? 'block' : 'none'; }
+const CHANGELOG = [
+  {v:'1.1.4', items:[
+    'Шаринганы: красные глаза с морганием (открываются по коду)',
+    'Новая аура «Чёрная» — за 50 000 кликов',
+    'Новая аура «Зелёный огонь» — за 66 000 кликов',
+    'Новая аура «Зелёная плазма» — открывается по коду',
+    'Все ауры анимированы, у каждой своя анимация',
+    'Журнал обновлений «Что нового» в меню']},
+  {v:'1.1.2', items:[
+    'Патч 2: белая причёска вместо русой',
+    'Патч 1: причёски подогнаны под размер головы',
+    '4 причёски в магазине за монеты',
+    'Кличка для питомца',
+    'Ввод кодов в меню']},
+  {v:'1.1.0', items:[
+    'Счётчик кликов по Юнусу',
+    '5 аур за клики (клики при покупке не тратятся)']},
+  {v:'1.0', items:[
+    'Кормление, мытьё, мини-игра «Лови еду», сон и разговор',
+    'Магазин одежды за монеты',
+    'Иконка, офлайн-режим и полный экран']}
+];
+function openChangelog() {
+  openSheet('Что нового в обновлении', '<div class="log">' + CHANGELOG.map(c =>
+    `<div class="ver">Версия ${c.v}</div><ul>${c.items.map(i => `<li>${i}</li>`).join('')}</ul>`).join('') + '</div>');
+}
 function cleanName(s) { return String(s || '').replace(/\s+/g, ' ').trim().slice(0, 16) || 'Юнус'; }
 function applyReward(r) {
   if (r.coins) S.coins += r.coins;
@@ -329,6 +390,7 @@ function applyReward(r) {
     if (kind === 'aura') S.ownedAuras[id] = true;
     else if (kind === 'hair') S.ownedHair[id] = true;
     else if (kind === 'item') S.owned[id] = true;
+    else if (kind === 'eyes') S.ownedEyes[id] = true;
   });
 }
 function redeem(raw) {
@@ -341,13 +403,15 @@ function redeem(raw) {
   return ['ok', r.msg || 'Код принят!'];
 }
 function openMenu() {
-  openSheet('Меню', `<div class="sec">Кличка</div>
+  openSheet('Меню', `<button class="it" id="logBtn" style="flex-direction:row;font-size:16px;gap:8px;width:100%;justify-content:center;margin-bottom:6px">📜 Что нового в обновлении</button>
+    <div class="sec">Кличка</div>
     <div class="row"><input id="nin" maxlength="16" placeholder="Как назовём?" autocomplete="off"><button id="nsave">✔</button></div>
     <div class="sec">Код</div>
     <div class="row"><input id="cin" maxlength="40" placeholder="Введи код" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="cgo">OK</button></div>
     <div class="msg" id="cmsg"></div>
-    <div class="sec">Версия 1.1.2 (патч 2) · кликов: ${fmt(S.clicks || 0)}</div>`);
+    <div class="sec">Версия ${VERSION} · кликов: ${fmt(S.clicks || 0)}</div>`);
   $('nin').value = S.name;
+  $('logBtn').onclick = openChangelog;
   const saveName = () => {
     S.name = cleanName($('nin').value); render(); save(); closeSheet();
     say('Теперь меня зовут ' + S.name + '!', {voice: true});
@@ -467,13 +531,18 @@ function openShop(keep) {
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : '🪙 ' + x.p;
     return `<button class="it ${on ? 'on' : ''}" data-hair="${x.id}"><span class="thumb ht"><img src="hair-${x.id}.png" alt=""></span><small>${x.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
-  const ga = AURAS.map(a => {
+  const ge = EYES.filter(x => S.ownedEyes[x.id]).map(x => {
+    const on = S.eyes === x.id;
+    return `<button class="it ${on ? 'on' : ''}" data-eyes="${x.id}"><span class="thumb et"><img src="sharingan-open.png" alt=""></span><small>${x.n}</small><small><b>${on ? 'Надето ✓' : 'Надеть'}</b></small></button>`;
+  }).join('');
+  const ga = AURAS.filter(a => !a.secret || S.ownedAuras[a.id]).map(a => {
     const owned = S.ownedAuras[a.id], on = S.aura === a.id, ok = (S.clicks || 0) >= a.req;
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : ok ? 'Купить' : '🔒 ' + fmt(a.req) + ' 👆';
     return `<button class="it ${on ? 'on' : ''} ${(!owned && !ok) ? 'lock' : ''}" data-aura="${a.id}"><span class="thumb k-${a.id}"><img src="aura-${a.id}.png" alt=""></span><small>${a.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
   openSheet('Магазин', `<div class="sec">Одежда — за монеты (у тебя 🪙 ${S.coins})</div><div class="grid">${g}</div>
     <div class="sec">Причёски — за монеты</div><div class="grid">${gh}</div>
+    ${ge ? `<div class="sec">Глаза — открыты по коду</div><div class="grid">${ge}</div>` : ''}
     <div class="sec">Ауры — за клики (у тебя 👆 ${fmt(S.clicks || 0)}). Клики не тратятся!</div><div class="grid">${ga}</div>`);
   $('sheetBody').scrollTop = st;
 }
@@ -497,6 +566,12 @@ function shopHair(id) {
   if (S.hair === id) say('Новая причёска! Как тебе?', {voice: true});
   render(); openShop(true); save();
 }
+function shopEyes(id) {
+  if (!S.ownedEyes[id]) return;
+  S.eyes = (S.eyes === id) ? '' : id;
+  if (S.eyes === id) say('Шаринган!', {voice: true});
+  render(); openShop(true); save();
+}
 function shopAura(id) {
   const a = AURAS.find(y => y.id === id);
   if (!S.ownedAuras[id]) {
@@ -515,6 +590,7 @@ $('sheetBody').addEventListener('click', e => {
   else if (t.dataset.shop) shop(t.dataset.shop);
   else if (t.dataset.aura) shopAura(t.dataset.aura);
   else if (t.dataset.hair) shopHair(t.dataset.hair);
+  else if (t.dataset.eyes) shopEyes(t.dataset.eyes);
 });
 document.querySelector('.actions').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -625,6 +701,7 @@ $('startBtn').onclick = () => {
   $('start').style.display = 'none';
   render(); updateZ();
   say('Привет! Я ' + S.name + '!', {voice: true});
+  if (S.seenVer !== VERSION) { S.seenVer = VERSION; save(); setTimeout(openChangelog, 1400); }
 };
 window.addEventListener('pagehide', save);
 document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
