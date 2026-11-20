@@ -84,6 +84,16 @@ html,body,#pet{touch-action:manipulation}
 .it small b{font-size:12px}
 #start .ver{font-size:13px;opacity:.8}
 
+/* причёски, имя, меню */
+.hair{position:absolute;left:50%;display:none;pointer-events:none;transform:translateX(-50%);transform-origin:50% 0;animation:hairSway 3.2s ease-in-out infinite alternate;filter:drop-shadow(0 2px 3px #0003)}
+@keyframes hairSway{from{transform:translateX(-50%) rotate(-.8deg)}to{transform:translateX(-50%) rotate(.8deg)}}
+.nameplate{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:9;background:rgba(0,0,0,.5);color:#fff;font-weight:800;font-size:17px;padding:6px 16px;border-radius:16px;max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px #0005}
+.gear{position:absolute;left:10px;top:8px;z-index:9;background:rgba(0,0,0,.4);border:0;color:#fff;border-radius:12px;font-size:20px;width:40px;height:36px}
+.thumb.ht{background:#a9a6d6}
+.thumb.ht img{max-width:60px;max-height:56px}
+.msg{min-height:20px;font-size:14px;margin-top:6px;color:#444}
+.msg.ok{color:#1b8a3a}.msg.err{color:#c62828}
+
 /* мини-игра */
 #game{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
 .item{position:absolute;left:0;top:0;font-size:40px;padding:6px;pointer-events:auto;touch-action:manipulation;line-height:1}
@@ -127,6 +137,8 @@ html,body,#pet{touch-action:manipulation}
   <div class="stage" id="stage">
     <div class="win"></div><div class="clicks" id="clicks">👆 0</div>
     <div class="bubble" id="bubble"></div>
+    <button class="gear" id="gearBtn" aria-label="Меню">⚙️</button>
+    <div class="nameplate" id="nameplate">Юнус</div>
     <button class="fs" id="fsBtn" aria-label="Полный экран">⛶</button>
     <div class="mood" id="mood">😄</div>
     <div id="hud" hidden></div>
@@ -136,6 +148,7 @@ html,body,#pet{touch-action:manipulation}
       <div class="pet" id="pet">
         <div class="photo" id="photo"><img src="yunus.jpg" alt="Юнус" draggable="false"></div>
         <div class="mouth" id="mouth"></div>
+        <img class="hair" id="hair" alt="">
         <div class="glasses" id="glasses"></div>
         <div class="hat" id="hat"></div>
       </div>
@@ -162,7 +175,7 @@ html,body,#pet{touch-action:manipulation}
     <h1>Мой Говорящий<br>Юнус</h1>
     <div class="pic"><img src="yunus.jpg" alt=""></div>
     <button id="startBtn">▶ Играть</button>
-    <div class="ver">версия 1.1.0</div>
+    <div class="ver">версия 1.1.2 (патч 2)</div>
   </div>
 </div>
 
@@ -173,7 +186,7 @@ const cl = v => Math.max(0, Math.min(100, v));
 
 /* ---------- состояние ---------- */
 const KEY = 'moy_govoryashchiy_yunus_v1';
-const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, t:Date.now()};
+const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], t:Date.now()};
 try { const r = JSON.parse(localStorage.getItem(KEY)); if (r) Object.assign(S, r); } catch (e) {}
 S.sleeping = false;
 (function offline() {
@@ -214,7 +227,7 @@ function render() {
   $('glasses').textContent = S.glasses ? (HATS.find(h => h.id === S.glasses) || {}).e || '' : '';
   $('app').classList.toggle('sleeping', S.sleeping);
   $('sleepBtn').innerHTML = S.sleeping ? '☀️<small>Будить</small>' : '😴<small>Спать</small>';
-  updateClicks(); renderAura();
+  updateClicks(); renderAura(); renderHair(); $('nameplate').textContent = S.name;
 }
 
 /* ---------- речь ---------- */
@@ -284,6 +297,73 @@ function tapFx(ev) {
   el.style.left = (ev.clientX - st.left - 12) + 'px'; el.style.top = (ev.clientY - st.top - 30) + 'px';
   addFx(el, 750);
 }
+
+/* ---------- причёски ---------- */
+const HAIRS = [
+  {id:'h1', n:'Оранжевая',    p:650,  w:108, t:1,  x:0},
+  {id:'h2', n:'Белая',        p:400,  w:106, hh:51, t:-7, x:0},
+  {id:'h3', n:'Бирюзовая',    p:800,  w:108, t:1,  x:0},
+  {id:'h4', n:'Красно-белая', p:1000, w:98,  t:-4, x:0}
+];
+let curHair = '';
+function renderHair() {
+  const a = HAIRS.find(x => x.id === S.hair), el = $('hair');
+  if (!a) { el.style.display = 'none'; curHair = ''; return; }
+  if (curHair !== a.id) {
+    curHair = a.id; el.src = 'hair-' + a.id + '.png';
+    el.style.width = a.w + '%'; el.style.height = a.hh ? a.hh + '%' : 'auto'; el.style.top = a.t + '%'; el.style.marginLeft = a.x + '%';
+  }
+  el.style.display = 'block';
+}
+
+/* ---------- кличка и коды ---------- */
+// Коды: 'слово': {coins:100, clicks:500, unlock:['aura:gold','hair:h1','item:crown'], msg:'Текст'}
+// Сейчас кодов нет — добавляются сюда позже.
+const CODES = {};
+function cleanName(s) { return String(s || '').replace(/\s+/g, ' ').trim().slice(0, 16) || 'Юнус'; }
+function applyReward(r) {
+  if (r.coins) S.coins += r.coins;
+  if (r.clicks) S.clicks = (S.clicks || 0) + r.clicks;
+  (r.unlock || []).forEach(u => {
+    const [kind, id] = u.split(':');
+    if (kind === 'aura') S.ownedAuras[id] = true;
+    else if (kind === 'hair') S.ownedHair[id] = true;
+    else if (kind === 'item') S.owned[id] = true;
+  });
+}
+function redeem(raw) {
+  const c = String(raw || '').trim().toLowerCase();
+  if (!c) return ['err', 'Введи код'];
+  const r = Object.prototype.hasOwnProperty.call(CODES, c) ? CODES[c] : null;
+  if (!r) return ['err', 'Такого кода нет'];
+  if (S.codes.includes(c)) return ['err', 'Этот код уже использован'];
+  applyReward(r); S.codes.push(c); render(); save();
+  return ['ok', r.msg || 'Код принят!'];
+}
+function openMenu() {
+  openSheet('Меню', `<div class="sec">Кличка</div>
+    <div class="row"><input id="nin" maxlength="16" placeholder="Как назовём?" autocomplete="off"><button id="nsave">✔</button></div>
+    <div class="sec">Код</div>
+    <div class="row"><input id="cin" maxlength="40" placeholder="Введи код" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="cgo">OK</button></div>
+    <div class="msg" id="cmsg"></div>
+    <div class="sec">Версия 1.1.2 (патч 2) · кликов: ${fmt(S.clicks || 0)}</div>`);
+  $('nin').value = S.name;
+  const saveName = () => {
+    S.name = cleanName($('nin').value); render(); save(); closeSheet();
+    say('Теперь меня зовут ' + S.name + '!', {voice: true});
+  };
+  $('nsave').onclick = saveName;
+  $('nin').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
+  const go = () => {
+    const [kind, text] = redeem($('cin').value);
+    $('cmsg').className = 'msg ' + kind; $('cmsg').textContent = text;
+    if (kind === 'ok') { $('cin').value = ''; say(text, {voice: true}); }
+  };
+  $('cgo').onclick = go;
+  $('cin').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+}
+$('gearBtn').addEventListener('click', openMenu);
+$('nameplate').addEventListener('click', openMenu);
 
 /* ---------- действия ---------- */
 function poke(ev) {
@@ -382,12 +462,18 @@ function openShop(keep) {
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : '🪙 ' + x.p;
     return `<button class="it ${on ? 'on' : ''}" data-shop="${x.id}"><span>${x.e}</span><small>${x.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
+  const gh = HAIRS.map(x => {
+    const owned = S.ownedHair[x.id], on = S.hair === x.id;
+    const lab = on ? 'Надето ✓' : owned ? 'Надеть' : '🪙 ' + x.p;
+    return `<button class="it ${on ? 'on' : ''}" data-hair="${x.id}"><span class="thumb ht"><img src="hair-${x.id}.png" alt=""></span><small>${x.n}</small><small><b>${lab}</b></small></button>`;
+  }).join('');
   const ga = AURAS.map(a => {
     const owned = S.ownedAuras[a.id], on = S.aura === a.id, ok = (S.clicks || 0) >= a.req;
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : ok ? 'Купить' : '🔒 ' + fmt(a.req) + ' 👆';
     return `<button class="it ${on ? 'on' : ''} ${(!owned && !ok) ? 'lock' : ''}" data-aura="${a.id}"><span class="thumb k-${a.id}"><img src="aura-${a.id}.png" alt=""></span><small>${a.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
   openSheet('Магазин', `<div class="sec">Одежда — за монеты (у тебя 🪙 ${S.coins})</div><div class="grid">${g}</div>
+    <div class="sec">Причёски — за монеты</div><div class="grid">${gh}</div>
     <div class="sec">Ауры — за клики (у тебя 👆 ${fmt(S.clicks || 0)}). Клики не тратятся!</div><div class="grid">${ga}</div>`);
   $('sheetBody').scrollTop = st;
 }
@@ -399,6 +485,16 @@ function shop(id) {
   }
   S[x.slot] = (S[x.slot] === id) ? '' : id;
   if (S[x.slot] === id) say('Как я выгляжу?', {voice: true});
+  render(); openShop(true); save();
+}
+function shopHair(id) {
+  const x = HAIRS.find(y => y.id === id);
+  if (!S.ownedHair[id]) {
+    if (S.coins < x.p) { say('Не хватает монет!', {}); return; }
+    S.coins -= x.p; S.ownedHair[id] = true;
+  }
+  S.hair = (S.hair === id) ? '' : id;
+  if (S.hair === id) say('Новая причёска! Как тебе?', {voice: true});
   render(); openShop(true); save();
 }
 function shopAura(id) {
@@ -418,6 +514,7 @@ $('sheetBody').addEventListener('click', e => {
   else if (t.dataset.chip) sendTalk(t.dataset.chip);
   else if (t.dataset.shop) shop(t.dataset.shop);
   else if (t.dataset.aura) shopAura(t.dataset.aura);
+  else if (t.dataset.hair) shopHair(t.dataset.hair);
 });
 document.querySelector('.actions').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -501,7 +598,7 @@ setInterval(() => {
   if (S.sleeping || busy || game || $('start').style.display === 'none' === false) return;
   const needs = [[S.hunger, 'Я голодный!'], [S.fun, 'Мне скучно...'], [S.clean, 'Хочу помыться!'], [S.energy, 'Хочу спать...']].sort((a, b) => a[0] - b[0])[0];
   if (needs[0] < 35) say(needs[1], {});
-  else if (Math.random() < .5) say(rnd(['Как дела?', 'Поиграем?', 'Я Юнус!', 'Здорово тут!', 'Потыкай меня!']), {});
+  else if (Math.random() < .5) say(rnd(['Как дела?', 'Поиграем?', 'Я ' + S.name + '!', 'Здорово тут!', 'Потыкай меня!']), {});
 }, 9000);
 
 function toggleFS() {
@@ -527,7 +624,7 @@ $('startBtn').onclick = () => {
   try { if (!document.fullscreenElement && !navigator.standalone) toggleFS(); } catch (err) {}
   $('start').style.display = 'none';
   render(); updateZ();
-  say('Привет! Я Юнус!', {voice: true});
+  say('Привет! Я ' + S.name + '!', {voice: true});
 };
 window.addEventListener('pagehide', save);
 document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
