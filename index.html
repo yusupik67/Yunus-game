@@ -139,6 +139,16 @@ html,body,#pet{touch-action:manipulation}
 .rw .rh{transform-origin:50% 50%;animation:rspinr 18s linear infinite}
 @keyframes rspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes rspinr{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+/* 1.1.6 */
+.stage.hasbg::before{display:none}
+.hat img{display:block;width:96cqw;filter:none}
+.hat.big{transform:translate(-50%,-58%)}
+.thumb.bt{background-size:cover;background-position:center}
+.thumb.bt.none{background:linear-gradient(#cfe8ff 0%,#eaf6ff 62%,#b98a5e 62%,#8c6239 100%)}
+.it .fi{height:34px;display:block}
+.flyer img{height:44px;display:block}
+.fxbar{position:absolute;right:10px;top:46px;z-index:9;display:flex;flex-direction:column;gap:4px;align-items:flex-end;pointer-events:none}
+.fxbar span{background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-size:13px;padding:3px 10px;border-radius:12px}
 /* журнал */
 .log ul{margin:2px 0 10px 18px;padding:0;font-size:14px;line-height:1.45;color:#333}
 .log .ver{font-weight:800;font-size:15px;color:#4b2fd0;margin-top:8px}
@@ -184,7 +194,7 @@ html,body,#pet{touch-action:manipulation}
   <div class="top" id="top"></div>
 
   <div class="stage" id="stage">
-    <div class="win"></div><div class="clicks" id="clicks">👆 0</div>
+    <div class="win"></div><div class="clicks" id="clicks">👆 0</div><div class="fxbar" id="fxbar"></div>
     <div class="bubble" id="bubble"></div>
     <button class="gear" id="gearBtn" aria-label="Меню">⚙️</button>
     <div class="nameplate" id="nameplate">Юнус</div>
@@ -227,7 +237,7 @@ html,body,#pet{touch-action:manipulation}
     <h1>Мой Говорящий<br>Юнус</h1>
     <div class="pic"><img src="yunus.jpg" alt=""></div>
     <button id="startBtn">▶ Играть</button>
-    <div class="ver">версия 1.1.5</div>
+    <div class="ver">версия 1.1.6</div>
   </div>
 </div>
 
@@ -238,7 +248,7 @@ const cl = v => Math.max(0, Math.min(100, v));
 
 /* ---------- состояние ---------- */
 const KEY = 'moy_govoryashchiy_yunus_v1';
-const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, seenVer:'', t:Date.now()};
+const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, bg:'', ownedBg:{}, fx:{}, seenVer:'', t:Date.now()};
 try { const r = JSON.parse(localStorage.getItem(KEY)); if (r) Object.assign(S, r); } catch (e) {}
 S.sleeping = false;
 (function offline() {
@@ -256,6 +266,7 @@ const HATS = [
   {id:'hat',   e:'🎩', p:60,  slot:'hat',     n:'Цилиндр'},
   {id:'grad',  e:'🎓', p:80,  slot:'hat',     n:'Выпускник'},
   {id:'crown', e:'👑', p:120, slot:'hat',     n:'Корона'},
+  {id:'boss',  e:'🎩', p:0,   slot:'hat',     n:'Босс КФС', img:'hat-boss.png', secret:true},
   {id:'g1',    e:'👓', p:40,  slot:'glasses', n:'Очки'},
   {id:'g2',    e:'🕶️', p:50,  slot:'glasses', n:'Тёмные очки'}
 ];
@@ -265,8 +276,42 @@ const FOODS = [
   {e:'🍕', n:'Пицца',  h:28, f:3,  c:-4, p:10},
   {e:'🍔', n:'Бургер', h:35, f:2,  c:-5, p:20},
   {e:'🍰', n:'Тортик', h:18, f:10, c:-4, p:30},
-  {e:'🥛', n:'Молоко', h:10, f:0,  c:0,  p:5}
+  {e:'🥛', n:'Молоко', h:10, f:0,  c:0,  p:5},
+  {e:'🐔', n:'Чикенбургер', img:'food-burger.png', h:45, f:10, c:-4, en:0,  p:100, fx:'dbl', tag:'👆 клики ×2 · 5 мин', say:'Сила! Клики считаются вдвое! 💪'},
+  {e:'🥤', n:'Кола',        img:'food-cola.png',   h:5,  f:15, c:0,  en:25, p:150, fx:'cheap', tag:'🪙 в 2 раза легче · 5 мин', say:'Заряд! Монеты теперь даются легче ⚡'}
 ];
+const FX_MS = 300000;
+const fxLeft = k => Math.max(0, ((S.fx || {})[k] || 0) - Date.now());
+const FXN = {dbl:'👆 ×2', cheap:'🪙 ÷2'};
+function renderFx() {
+  const el = $('fxbar'); if (!el) return;
+  el.innerHTML = Object.keys(FXN).filter(k => fxLeft(k) > 0).map(k => {
+    const s = Math.ceil(fxLeft(k) / 1000); return '<span>' + FXN[k] + ' ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + '</span>';
+  }).join('');
+}
+/* ---------- фоны ---------- */
+const BGS = [
+  {id:'school', n:'Класс',     p:500},
+  {id:'sauna',  n:'Сауна',     p:1000},
+  {id:'kfc',    n:'KFC',       p:2000},
+  {id:'galaxy', n:'Галактика', p:2500}
+];
+function renderBg() {
+  const b = BGS.find(x => x.id === S.bg && S.ownedBg[x.id]), st = $('stage');
+  st.classList.toggle('hasbg', !!b);
+  st.style.background = b ? 'url(bg-' + b.id + '.jpg) center bottom/cover no-repeat' : '';
+}
+function shopBg(id) {
+  if (id === '') { S.bg = ''; render(); openShop(true); save(); return; }
+  const x = BGS.find(y => y.id === id); if (!x) return;
+  if (!S.ownedBg[id]) {
+    if (S.coins < x.p) { say('Не хватает монет!', {}); return; }
+    S.coins -= x.p; S.ownedBg[id] = true;
+  }
+  S.bg = (S.bg === id) ? '' : id;
+  if (S.bg === id) say('Новое место! Мне нравится', {voice: true});
+  render(); openShop(true); save();
+}
 
 /* ---------- отрисовка ---------- */
 function render() {
@@ -275,7 +320,11 @@ function render() {
   const m = Math.min(S.hunger, S.fun, S.clean, S.energy);
   $('mood').textContent = S.sleeping ? '😴' : m > 60 ? '😄' : m > 30 ? '😐' : '😢';
   $('photo').style.filter = (!S.sleeping && m < 30) ? 'saturate(.55) brightness(.92)' : 'none';
-  $('hat').textContent = S.hat ? (HATS.find(h => h.id === S.hat) || {}).e || '' : '';
+  const hd = S.hat ? (HATS.find(h => h.id === S.hat) || {}) : {};
+  if (hd.img) { if (!$('hat').firstChild || $('hat').firstChild.nodeName !== 'IMG' || $('hat').dataset.i !== hd.img) { $('hat').innerHTML = '<img src="' + hd.img + '" alt="">'; $('hat').dataset.i = hd.img; } }
+  else { $('hat').dataset.i = ''; $('hat').textContent = hd.e || ''; }
+  $('hat').classList.toggle('big', !!hd.img);
+  renderBg(); renderFx();
   $('glasses').textContent = S.glasses ? (HATS.find(h => h.id === S.glasses) || {}).e || '' : '';
   $('app').classList.toggle('sleeping', S.sleeping);
   $('sleepBtn').innerHTML = S.sleeping ? '☀️<small>Будить</small>' : '😴<small>Спать</small>';
@@ -384,8 +433,9 @@ function renderHair() {
 /* ---------- кличка и коды ---------- */
 // Коды: 'слово': {coins:100, clicks:500, unlock:['aura:gold','hair:h1','item:crown'], msg:'Текст'}
 // Сейчас кодов нет — добавляются сюда позже.
-const VERSION = '1.1.5';
+const VERSION = '1.1.6';
 const CODES = {
+  'bosskfc13-56': {unlock:['item:boss'], msg:'Шапка «Босс КФС» открыта! Она в магазине, раздел «Одежда»'},
   'sharingan44':  {unlock:['eyes:sharingan'], msg:'Шаринган открыт! Он в магазине, раздел «Глаза»'},
   'yunusforever': {unlock:['aura:plasma'],    msg:'Зелёная плазма открыта! Она в магазине, раздел «Ауры»'}
 };
@@ -409,6 +459,10 @@ function renderEyes() {
   $('eyesG').style.display = on('gold') ? 'block' : 'none';
 }
 const CHANGELOG = [
+  {v:'1.1.6', items:[
+    'Фоны за Юнусом в магазине: Класс — 500 монет, Сауна — 1000, KFC — 2000, Галактика — 2500',
+    'Еда с эффектами: Чикенбургер (100 монет) — на 5 минут удваивает клики; Кола «Бургер Кинг» (150 монет) — на 5 минут монеты за клики даются вдвое легче',
+    'Новая шапка «Босс КФС» — открывается по коду']},
   {v:'1.1.5', items:[
     'Золотые глаза с морганием — в магазине за 2500 монет',
     'Новая аура «Кроваво-чёрная» — за 100 000 кликов',
@@ -492,17 +546,19 @@ $('nameplate').addEventListener('click', openMenu);
 /* ---------- действия ---------- */
 function poke(ev) {
   if (game) return;
-  S.clicks = (S.clicks || 0) + 1;
+  const prev = S.clicks || 0, add = fxLeft('dbl') > 0 ? 2 : 1;
+  S.clicks = prev + add;
+  const crossed = n => Math.floor(S.clicks / n) > Math.floor(prev / n);
   updateClicks(); tapFx(ev);
   if (S.aura) $('aura').animate([{transform: 'scale(1)'}, {transform: 'scale(1.07)'}, {transform: 'scale(1)'}], {duration: 220});
-  const unlocked = AURAS.find(x => x.req === S.clicks);
+  const unlocked = AURAS.find(x => x.req > prev && x.req <= S.clicks);
   if (S.sleeping) { toggleSleep(); say('Ой! Я же спал...', {voice: true}); return; }
   const p = $('pet'); p.classList.remove('poke'); void p.offsetWidth; p.classList.add('poke');
   S.fun = cl(S.fun + 2);
-  if (S.clicks % 8 === 0) S.coins++;
-  let t = rnd(['Ой!', 'Хи-хи!', 'Щекотно!', 'Ха-ха-ха!', 'Ещё!', 'Привет!']), voice = S.clicks % 6 === 0;
+  if (crossed(fxLeft('cheap') > 0 ? 4 : 8)) S.coins++;
+  let t = rnd(['Ой!', 'Хи-хи!', 'Щекотно!', 'Ха-ха-ха!', 'Ещё!', 'Привет!']), voice = crossed(6);
   if (S.hunger < 30) t = 'Я голодный! Покорми меня!';
-  if (S.clicks % 100 === 0) { t = fmt(S.clicks) + ' кликов! Круто!'; voice = true; }
+  if (crossed(100)) { t = fmt(S.clicks) + ' кликов! Круто!'; voice = true; }
   if (unlocked) { t = unlocked.n + ' аура открыта! Загляни в магазин'; voice = true; }
   say(t, {voice}); render();
 }
@@ -518,7 +574,7 @@ function feed(i) {
   busy = true; closeSheet();
   const st = stageRect(), mr = $('mouth').getBoundingClientRect();
   const el = document.createElement('div');
-  el.className = 'fx flyer'; el.textContent = f.e;
+  el.className = 'fx flyer'; if (f.img) el.innerHTML = '<img src="' + f.img + '" alt="">'; else el.textContent = f.e;
   el.style.left = (st.width / 2 - 22) + 'px'; el.style.top = (st.height - 60) + 'px';
   $('stage').appendChild(el);
   const dx = (mr.left + mr.width / 2 - st.left) - (st.width / 2), dy = (mr.top + mr.height / 2 - st.top) - (st.height - 38);
@@ -529,8 +585,9 @@ function feed(i) {
       $('mouth').className = 'mouth chew';
       setTimeout(() => {
         $('mouth').className = 'mouth';
-        S.hunger = cl(S.hunger + f.h); S.fun = cl(S.fun + f.f); S.clean = cl(S.clean + f.c);
-        busy = false; say(rnd(['Ням-ням!', 'Вкуснятина!', 'Спасибо!']), {voice: true}); render();
+        S.hunger = cl(S.hunger + f.h); S.fun = cl(S.fun + f.f); S.clean = cl(S.clean + f.c); if (f.en) S.energy = cl(S.energy + f.en);
+        if (f.fx) { S.fx = S.fx || {}; S.fx[f.fx] = Date.now() + fxLeft(f.fx) + FX_MS; }
+        busy = false; say(f.say || rnd(['Ням-ням!', 'Вкуснятина!', 'Спасибо!']), {voice: true}); render(); save();
       }, 1200);
     };
 }
@@ -566,7 +623,7 @@ function closeSheet() { $('sheet').classList.remove('open'); }
 $('sheetX').onclick = closeSheet;
 
 function openFood() {
-  openSheet('Чем покормим? (у тебя 🪙 ' + S.coins + ')', '<div class="grid">' + FOODS.map((f, i) => `<button class="it ${S.coins < f.p ? 'lock' : ''}" data-food="${i}"><span>${f.e}</span><small>${f.n}</small><small><b>🪙 ${f.p}</b></small></button>`).join('') + '</div>');
+  openSheet('Чем покормим? (у тебя 🪙 ' + S.coins + ')', '<div class="grid">' + FOODS.map((f, i) => `<button class="it ${S.coins < f.p ? 'lock' : ''}" data-food="${i}"><span>${f.img ? `<img class="fi" src="${f.img}" alt="">` : f.e}</span><small>${f.n}</small><small><b>🪙 ${f.p}</b></small>${f.tag ? `<small>${f.tag}</small>` : ''}</button>`).join('') + '</div>');
 }
 function openTalk() {
   const chips = ['Привет!', 'Как дела?', 'Ты классный!', 'Давай дружить', 'Я люблю математику'];
@@ -583,10 +640,10 @@ function sendTalk(t) {
 }
 function openShop(keep) {
   const st = keep ? $('sheetBody').scrollTop : 0;
-  const g = HATS.map(x => {
+  const g = HATS.filter(x => !x.secret || S.owned[x.id]).map(x => {
     const owned = S.owned[x.id], on = S.hat === x.id || S.glasses === x.id;
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : '🪙 ' + x.p;
-    return `<button class="it ${on ? 'on' : ''}" data-shop="${x.id}"><span>${x.e}</span><small>${x.n}</small><small><b>${lab}</b></small></button>`;
+    return `<button class="it ${on ? 'on' : ''}" data-shop="${x.id}">${x.img ? `<span class="thumb ht"><img src="${x.img}" alt=""></span>` : `<span>${x.e}</span>`}<small>${x.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
   const gh = HAIRS.map(x => {
     const owned = S.ownedHair[x.id], on = S.hair === x.id;
@@ -603,9 +660,15 @@ function openShop(keep) {
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : ok ? 'Купить' : '🔒 ' + fmt(a.req) + ' 👆';
     return `<button class="it ${on ? 'on' : ''} ${(!owned && !ok) ? 'lock' : ''}" data-aura="${a.id}"><span class="thumb k-${a.id}"><img src="aura-${a.id}.png" alt=""></span><small>${a.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
+  const gb = '<button class="it ' + (!S.bg ? 'on' : '') + '" data-bg=""><span class="thumb bt none"></span><small>Обычный</small><small><b>' + (!S.bg ? 'Выбран ✓' : 'Выбрать') + '</b></small></button>' + BGS.map(x => {
+    const owned = S.ownedBg[x.id], on = S.bg === x.id;
+    const lab = on ? 'Выбран ✓' : owned ? 'Выбрать' : '🪙 ' + x.p;
+    return `<button class="it ${on ? 'on' : ''}" data-bg="${x.id}"><span class="thumb bt" style="background-image:url(bg-${x.id}.jpg)"></span><small>${x.n}</small><small><b>${lab}</b></small></button>`;
+  }).join('');
   openSheet('Магазин', `<div class="sec">Одежда — за монеты (у тебя 🪙 ${S.coins})</div><div class="grid">${g}</div>
     <div class="sec">Причёски — за монеты</div><div class="grid">${gh}</div>
     ${ge ? `<div class="sec">Глаза</div><div class="grid">${ge}</div>` : ''}
+    <div class="sec">Фоны — за монеты</div><div class="grid">${gb}</div>
     <div class="sec">Ауры — за клики (у тебя 👆 ${fmt(S.clicks || 0)}). Клики не тратятся!</div><div class="grid">${ga}</div>`);
   $('sheetBody').scrollTop = st;
 }
@@ -659,6 +722,7 @@ $('sheetBody').addEventListener('click', e => {
   else if (t.dataset.aura) shopAura(t.dataset.aura);
   else if (t.dataset.hair) shopHair(t.dataset.hair);
   else if (t.dataset.eyes) shopEyes(t.dataset.eyes);
+  else if (t.dataset.bg !== undefined) shopBg(t.dataset.bg);
 });
 document.querySelector('.actions').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
