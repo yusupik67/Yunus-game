@@ -252,7 +252,8 @@ const cl = v => Math.max(0, Math.min(100, v));
 
 /* ---------- состояние ---------- */
 const KEY = 'moy_govoryashchiy_yunus_v1';
-const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, bg:'', ownedBg:{}, fx:{}, lvl:0, xp:0, seenVer:'', t:Date.now()};
+const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, bg:'', ownedBg:{}, fx:{}, lvl:0, xp:0, reb:0, chakra:0, skills:{}, seenVer:'', t:Date.now()};
+const DEF = JSON.parse(JSON.stringify(S));
 try { const r = JSON.parse(localStorage.getItem(KEY)); if (r) Object.assign(S, r); } catch (e) {}
 S.sleeping = false;
 (function offline() {
@@ -321,7 +322,7 @@ function xpWatch() {
   const cur = {hunger: S.hunger, fun: S.fun, clean: S.clean, energy: S.energy};
   if (prevSt) {
     let t = 0;
-    for (const k in XPR) { const d = cur[k] - prevSt[k]; if (d > 0) t += d * XPR[k] / 10; }
+    for (const k in XPR) { const d = cur[k] - prevSt[k]; if (d > 0) t += d * XPR[k] / 10 * (k === 'clean' ? 1 + .25 * sk('wash') : 1); }
     prevSt = cur;
     if (t > 0) gainXp(t);
   } else prevSt = cur;
@@ -329,8 +330,59 @@ function xpWatch() {
 }
 function renderLvl() {
   const need = XPT[S.lvl + 1];
-  $('lvlN').textContent = S.lvl >= MAXLVL ? 'Ур. ' + S.lvl + ' MAX' : 'Ур. ' + S.lvl;
+  $('lvlN').textContent = (S.lvl >= MAXLVL ? 'Ур. ' + S.lvl + ' MAX' : 'Ур. ' + S.lvl) + (S.reb ? ' · ♻' + S.reb : '');
   $('lvlBar').style.width = (S.lvl >= MAXLVL ? 100 : Math.min(100, S.xp / need * 100)) + '%';
+}
+/* ---------- перерождение ---------- */
+const REBS = [{l:5, c:3000, m:200}, {l:9, c:9000, m:500}, {l:13, c:15000, m:850}, {l:16, c:17500, m:1000}, {l:20, c:20000, m:1250}];
+const SKILLS = [
+  {id:'belly', n:'Бездонный желудок',     max:3, cost:1, d:'Юнусу нужно на 20% больше еды для утоления голода'},
+  {id:'sleep', n:'Быстрое восстановление', max:3, cost:1, d:'Юнус спит на 20% меньше времени'},
+  {id:'wash',  n:'Мытя-чистя',            max:3, cost:1, d:'+25% опыта, когда Юнус моется'},
+  {id:'click', n:'Доп. клик',              max:1, cost:4, d:'+1 клик при нажатии'}
+];
+function sk(id) { return (S.skills || {})[id] || 0; }
+function doReborn() {
+  const r = REBS[S.reb];
+  if (!r || S.lvl < r.l || (S.clicks || 0) < r.c || S.coins < r.m) return;
+  const keep = {clicks: S.clicks - r.c, codes: S.codes, name: S.name, seenVer: S.seenVer, best: S.best, reb: S.reb + 1, chakra: S.chakra + 2, skills: S.skills || {}};
+  const ca = {}, ch = {}, ci = {}, ce = {};
+  Object.values(CODES).concat(Object.values(HCODES)).forEach(x => (x.unlock || []).forEach(u => {
+    const [k, id] = u.split(':');
+    if (k === 'aura' && S.ownedAuras[id]) ca[id] = true;
+    else if (k === 'hair' && S.ownedHair[id]) ch[id] = true;
+    else if (k === 'item' && S.owned[id]) ci[id] = true;
+    else if (k === 'eyes' && S.ownedEyes[id]) ce[id] = true;
+  }));
+  Object.keys(S).forEach(k => delete S[k]);
+  Object.assign(S, JSON.parse(JSON.stringify(DEF)), keep, {ownedAuras: ca, ownedHair: ch, owned: ci, ownedEyes: ce, t: Date.now()});
+  prevSt = null; curAura = ''; updateZ(); render(); save();
+  closeSheet(); say('Я переродился! +2 очка чакры ✨', {voice: true});
+}
+function buySkill(id) {
+  const s = SKILLS.find(x => x.id === id); if (!s) return;
+  if (sk(id) >= s.max || S.chakra < s.cost) return;
+  S.chakra -= s.cost; S.skills = S.skills || {}; S.skills[id] = sk(id) + 1;
+  save(); openReborn(false);
+}
+function openReborn(confirm) {
+  const r = REBS[S.reb], ok = (c, t) => `<div style="color:${c ? '#2e9e4f' : '#d64545'};font-weight:700">${c ? '✓' : '✗'} ${t}</div>`;
+  let top;
+  if (!r) top = '<div class="sec">Все перерождения пройдены (пока что)</div>';
+  else {
+    const a = S.lvl >= r.l, b = (S.clicks || 0) >= r.c, c = S.coins >= r.m, can = a && b && c;
+    top = `<div class="sec">Перерождение ${S.reb + 1} из ${REBS.length}</div>` + ok(a, 'Уровень ' + r.l + ' (сейчас ' + S.lvl + ')') + ok(b, fmt(r.c) + ' кликов (сейчас ' + fmt(S.clicks || 0) + ')') + ok(c, r.m + ' монет (сейчас ' + S.coins + ')') +
+      `<div style="font-size:13px;opacity:.75;margin:6px 0">Сбросится всё, кроме предметов за коды и кликов, оставшихся после оплаты. Награда: 2 очка чакры.</div>` +
+      `<button class="it" id="rebGo" style="width:100%;flex-direction:row;justify-content:center;font-size:16px;${can ? '' : 'opacity:.5'}">${confirm ? 'Точно? Всё сбросится — жми ещё раз' : '🌀 Переродиться'}</button>`;
+  }
+  const tree = `<div class="sec">Древо навыков · Юнусная чакра: ✨ ${S.chakra}</div>` + SKILLS.map(s => {
+    const n = sk(s.id), full = n >= s.max;
+    return `<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><div style="flex:1"><b>${s.n} (${n}/${s.max})</b><div style="font-size:13px;opacity:.75">${s.d}</div></div><button class="it" data-sk="${s.id}" style="width:74px;min-height:0;padding:8px 4px;${full || S.chakra < s.cost ? 'opacity:.5' : ''}">${full ? 'Макс' : '✨ ' + s.cost}</button></div>`;
+  }).join('');
+  openSheet('Перерождение', top + tree);
+  const g = $('rebGo');
+  if (g) g.onclick = () => { const q = REBS[S.reb]; if (!q || S.lvl < q.l || (S.clicks || 0) < q.c || S.coins < q.m) return; if (!confirm) openReborn(true); else doReborn(); };
+  document.querySelectorAll('[data-sk]').forEach(b => b.onclick = () => buySkill(b.dataset.sk));
 }
 /* ---------- фоны ---------- */
 const BGS = [
@@ -505,6 +557,7 @@ function renderEyes() {
 const CHANGELOG = [
   {v:'1.2.0', items:[
     'Уровни Юнуса (до 30): опыт даётся за веселье, еду, мытьё и сон, за каждый новый уровень — монеты',
+    'Перерождения (5 штук): за каждое — 2 очка Юнусной чакры, навыки в древе навыков',
     'Новая еда: Крылышко KFC (75 монет) — опыт ×2 на 2 минуты; Баскет крылышек (300 монет) — опыт ×4 на 5 минут']},
   {v:'1.1.6', items:[
     'Фоны за Юнусом в магазине: Класс — 500 монет, Сауна — 1000, KFC — 2000, Галактика — 2500',
@@ -565,6 +618,7 @@ function redeem(raw) {
 }
 function openMenu() {
   openSheet('Меню', `<button class="it" id="logBtn" style="flex-direction:row;font-size:16px;gap:8px;width:100%;justify-content:center;margin-bottom:6px">📜 Что нового в обновлении</button>
+    <button class="it" id="rebBtn" style="flex-direction:row;font-size:16px;gap:8px;width:100%;justify-content:center;margin-bottom:6px">🌀 Перерождение</button>
     <div class="sec">Кличка</div>
     <div class="row"><input id="nin" maxlength="16" placeholder="Как назовём?" autocomplete="off"><button id="nsave">✔</button></div>
     <div class="sec">Код</div>
@@ -574,6 +628,7 @@ function openMenu() {
     <div class="sec">Версия ${VERSION} · кликов: ${fmt(S.clicks || 0)}</div>`);
   $('nin').value = S.name;
   $('logBtn').onclick = openChangelog;
+  $('rebBtn').onclick = () => openReborn(false);
   const saveName = () => {
     S.name = cleanName($('nin').value); render(); save(); closeSheet();
     say('Теперь меня зовут ' + S.name + '!', {voice: true});
@@ -594,7 +649,7 @@ $('nameplate').addEventListener('click', openMenu);
 /* ---------- действия ---------- */
 function poke(ev) {
   if (game) return;
-  const prev = S.clicks || 0, add = fxLeft('dbl') > 0 ? 2 : 1;
+  const prev = S.clicks || 0, add = (1 + sk('click')) * (fxLeft('dbl') > 0 ? 2 : 1);
   S.clicks = prev + add;
   const crossed = n => Math.floor(S.clicks / n) > Math.floor(prev / n);
   updateClicks(); tapFx(ev);
@@ -633,7 +688,7 @@ function feed(i) {
       $('mouth').className = 'mouth chew';
       setTimeout(() => {
         $('mouth').className = 'mouth';
-        S.hunger = cl(S.hunger + f.h); S.fun = cl(S.fun + f.f); S.clean = cl(S.clean + f.c); if (f.en) S.energy = cl(S.energy + f.en);
+        S.hunger = cl(S.hunger + f.h / (1 + .2 * sk('belly'))); S.fun = cl(S.fun + f.f); S.clean = cl(S.clean + f.c); if (f.en) S.energy = cl(S.energy + f.en);
         if (f.fx) { S.fx = S.fx || {}; S.fx[f.fx] = Date.now() + fxLeft(f.fx) + (f.ms || FX_MS); }
         busy = false; say(f.say || rnd(['Ням-ням!', 'Вкуснятина!', 'Спасибо!']), {voice: true}); render(); save();
       }, 1200);
@@ -840,7 +895,7 @@ function endGame() {
 let ticks = 0;
 function tick(dt) {
   if (S.sleeping) {
-    S.energy = cl(S.energy + dt * 1.5); S.hunger = cl(S.hunger - dt * .04);
+    S.energy = cl(S.energy + dt * 1.5 / (1 - .2 * sk('sleep'))); S.hunger = cl(S.hunger - dt * .04);
     S.fun = cl(S.fun - dt * .03); S.clean = cl(S.clean - dt * .03);
     if (S.energy >= 100) toggleSleep();
   } else {
