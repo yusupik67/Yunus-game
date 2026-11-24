@@ -147,6 +147,9 @@ html,body,#pet{touch-action:manipulation}
 .thumb.bt.none{background:linear-gradient(#cfe8ff 0%,#eaf6ff 62%,#b98a5e 62%,#8c6239 100%)}
 .it .fi{height:34px;display:block}
 .flyer img{height:44px;display:block}
+.lvl{position:absolute;left:10px;top:50px;z-index:9;background:rgba(0,0,0,.4);color:#fff;font-weight:800;font-size:14px;padding:4px 10px 6px;border-radius:12px;min-width:64px;pointer-events:none}
+.lvl i{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin-top:3px;overflow:hidden}
+.lvl u{display:block;height:100%;width:0;background:#ffd54a;text-decoration:none}
 .fxbar{position:absolute;right:10px;top:46px;z-index:9;display:flex;flex-direction:column;gap:4px;align-items:flex-end;pointer-events:none}
 .fxbar span{background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-size:13px;padding:3px 10px;border-radius:12px}
 /* журнал */
@@ -195,6 +198,7 @@ html,body,#pet{touch-action:manipulation}
 
   <div class="stage" id="stage">
     <div class="win"></div><div class="clicks" id="clicks">👆 0</div><div class="fxbar" id="fxbar"></div>
+    <div class="lvl" id="lvl"><b id="lvlN">Ур. 0</b><i><u id="lvlBar"></u></i></div>
     <div class="bubble" id="bubble"></div>
     <button class="gear" id="gearBtn" aria-label="Меню">⚙️</button>
     <div class="nameplate" id="nameplate">Юнус</div>
@@ -237,7 +241,7 @@ html,body,#pet{touch-action:manipulation}
     <h1>Мой Говорящий<br>Юнус</h1>
     <div class="pic"><img src="yunus.jpg" alt=""></div>
     <button id="startBtn">▶ Играть</button>
-    <div class="ver">версия 1.1.6</div>
+    <div class="ver">версия 1.2.0</div>
   </div>
 </div>
 
@@ -248,7 +252,7 @@ const cl = v => Math.max(0, Math.min(100, v));
 
 /* ---------- состояние ---------- */
 const KEY = 'moy_govoryashchiy_yunus_v1';
-const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, bg:'', ownedBg:{}, fx:{}, seenVer:'', t:Date.now()};
+const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, bg:'', ownedBg:{}, fx:{}, lvl:0, xp:0, seenVer:'', t:Date.now()};
 try { const r = JSON.parse(localStorage.getItem(KEY)); if (r) Object.assign(S, r); } catch (e) {}
 S.sleeping = false;
 (function offline() {
@@ -278,16 +282,55 @@ const FOODS = [
   {e:'🍰', n:'Тортик', h:18, f:10, c:-4, p:30},
   {e:'🥛', n:'Молоко', h:10, f:0,  c:0,  p:5},
   {e:'🐔', n:'Чикенбургер', img:'food-burger.png', h:45, f:10, c:-4, en:0,  p:100, fx:'dbl', tag:'👆 клики ×2 · 5 мин', say:'Сила! Клики считаются вдвое! 💪'},
-  {e:'🥤', n:'Кола',        img:'food-cola.png',   h:5,  f:15, c:0,  en:25, p:150, fx:'cheap', tag:'🪙 в 2 раза легче · 5 мин', say:'Заряд! Монеты теперь даются легче ⚡'}
+  {e:'🥤', n:'Кола',        img:'food-cola.png',   h:5,  f:15, c:0,  en:25, p:150, fx:'cheap', tag:'🪙 в 2 раза легче · 5 мин', say:'Заряд! Монеты теперь даются легче ⚡'},
+  {e:'🍗', n:'Крылышко KFC',  img:'food-wing.png',   h:12, f:5,  c:-2, p:75,  fx:'xp2', ms:120000, tag:'⭐ опыт ×2 · 2 мин', say:'Опыт ×2! ⭐'},
+  {e:'🪣', n:'Баскет крылышек', img:'food-bucket.png', h:35, f:10, c:-5, p:300, fx:'xp4', ms:300000, tag:'⭐ опыт ×4 · 5 мин', say:'Опыт ×4! ⭐⭐'}
 ];
 const FX_MS = 300000;
 const fxLeft = k => Math.max(0, ((S.fx || {})[k] || 0) - Date.now());
-const FXN = {dbl:'👆 ×2', cheap:'🪙 ÷2'};
+const FXN = {dbl:'👆 ×2', cheap:'🪙 ÷2', xp2:'⭐ ×2', xp4:'⭐ ×4'};
 function renderFx() {
   const el = $('fxbar'); if (!el) return;
   el.innerHTML = Object.keys(FXN).filter(k => fxLeft(k) > 0).map(k => {
     const s = Math.ceil(fxLeft(k) / 1000); return '<span>' + FXN[k] + ' ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + '</span>';
   }).join('');
+}
+/* ---------- уровни ---------- */
+const XPT = [0, 15, 19, 22];
+(function () {
+  const r1 = Math.pow(180 / 22, 1 / 8), r2 = Math.pow(107001 / 252, 1 / 18);
+  for (let L = 4; L <= 11; L++) XPT[L] = L === 11 ? 180 : Math.round(22 * Math.pow(r1, L - 3));
+  for (let L = 12; L <= 30; L++) XPT[L] = L === 30 ? 107001 : Math.round(252 * Math.pow(r2, L - 12));
+})();
+const MAXLVL = 30, XPR = {hunger: 5, fun: 1, clean: 5, energy: 10};
+let prevSt = null, inXp = false;
+function xpMult() { return fxLeft('xp4') > 0 ? 4 : fxLeft('xp2') > 0 ? 2 : 1; }
+function gainXp(a) {
+  if (S.lvl >= MAXLVL) { S.xp = 0; return; }
+  S.xp += a * xpMult();
+  let up = 0, coins = 0;
+  while (S.lvl < MAXLVL && S.xp >= XPT[S.lvl + 1]) {
+    const need = XPT[S.lvl + 1]; S.xp -= need; S.lvl++;
+    const m = Math.round(need / S.lvl / 4); S.coins += m; coins += m; up = S.lvl;
+  }
+  if (S.lvl >= MAXLVL) S.xp = 0;
+  if (up) say('Уровень ' + up + '! +' + coins + ' 🪙', {voice: true});
+}
+function xpWatch() {
+  if (inXp) return; inXp = true;
+  const cur = {hunger: S.hunger, fun: S.fun, clean: S.clean, energy: S.energy};
+  if (prevSt) {
+    let t = 0;
+    for (const k in XPR) { const d = cur[k] - prevSt[k]; if (d > 0) t += d * XPR[k] / 10; }
+    prevSt = cur;
+    if (t > 0) gainXp(t);
+  } else prevSt = cur;
+  inXp = false;
+}
+function renderLvl() {
+  const need = XPT[S.lvl + 1];
+  $('lvlN').textContent = S.lvl >= MAXLVL ? 'Ур. ' + S.lvl + ' MAX' : 'Ур. ' + S.lvl;
+  $('lvlBar').style.width = (S.lvl >= MAXLVL ? 100 : Math.min(100, S.xp / need * 100)) + '%';
 }
 /* ---------- фоны ---------- */
 const BGS = [
@@ -315,6 +358,7 @@ function shopBg(id) {
 
 /* ---------- отрисовка ---------- */
 function render() {
+  xpWatch(); renderLvl();
   STATS.forEach(s => $('b_' + s[1]).style.width = Math.round(S[s[1]]) + '%');
   $('coins').textContent = '🪙 ' + S.coins;
   const m = Math.min(S.hunger, S.fun, S.clean, S.energy);
@@ -433,7 +477,7 @@ function renderHair() {
 /* ---------- кличка и коды ---------- */
 // Коды: 'слово': {coins:100, clicks:500, unlock:['aura:gold','hair:h1','item:crown'], msg:'Текст'}
 // Сейчас кодов нет — добавляются сюда позже.
-const VERSION = '1.1.6';
+const VERSION = '1.2.0';
 const CODES = {
   'bosskfc13-56': {unlock:['item:boss'], msg:'Шапка «Босс КФС» открыта! Она в магазине, раздел «Одежда»'},
   'sharingan44':  {unlock:['eyes:sharingan'], msg:'Шаринган открыт! Он в магазине, раздел «Глаза»'},
@@ -459,6 +503,9 @@ function renderEyes() {
   $('eyesG').style.display = on('gold') ? 'block' : 'none';
 }
 const CHANGELOG = [
+  {v:'1.2.0', items:[
+    'Уровни Юнуса (до 30): опыт даётся за веселье, еду, мытьё и сон, за каждый новый уровень — монеты',
+    'Новая еда: Крылышко KFC (75 монет) — опыт ×2 на 2 минуты; Баскет крылышек (300 монет) — опыт ×4 на 5 минут']},
   {v:'1.1.6', items:[
     'Фоны за Юнусом в магазине: Класс — 500 монет, Сауна — 1000, KFC — 2000, Галактика — 2500',
     'Еда с эффектами: Чикенбургер (100 монет) — на 5 минут удваивает клики; Кола «Бургер Кинг» (150 монет) — на 5 минут монеты за клики даются вдвое легче',
@@ -523,6 +570,7 @@ function openMenu() {
     <div class="sec">Код</div>
     <div class="row"><input id="cin" maxlength="40" placeholder="Введи код" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="cgo">OK</button></div>
     <div class="msg" id="cmsg"></div>
+    <div class="sec">Уровень ${S.lvl}${S.lvl < MAXLVL ? ' · опыт ' + Math.floor(S.xp) + '/' + XPT[S.lvl + 1] : ' (максимум)'}</div>
     <div class="sec">Версия ${VERSION} · кликов: ${fmt(S.clicks || 0)}</div>`);
   $('nin').value = S.name;
   $('logBtn').onclick = openChangelog;
@@ -586,7 +634,7 @@ function feed(i) {
       setTimeout(() => {
         $('mouth').className = 'mouth';
         S.hunger = cl(S.hunger + f.h); S.fun = cl(S.fun + f.f); S.clean = cl(S.clean + f.c); if (f.en) S.energy = cl(S.energy + f.en);
-        if (f.fx) { S.fx = S.fx || {}; S.fx[f.fx] = Date.now() + fxLeft(f.fx) + FX_MS; }
+        if (f.fx) { S.fx = S.fx || {}; S.fx[f.fx] = Date.now() + fxLeft(f.fx) + (f.ms || FX_MS); }
         busy = false; say(f.say || rnd(['Ням-ням!', 'Вкуснятина!', 'Спасибо!']), {voice: true}); render(); save();
       }, 1200);
     };
