@@ -150,6 +150,28 @@ html,body,#pet{touch-action:manipulation}
 .lvl{position:absolute;left:10px;top:50px;z-index:9;background:rgba(0,0,0,.4);color:#fff;font-weight:800;font-size:14px;padding:4px 10px 6px;border-radius:12px;min-width:64px;pointer-events:none}
 .lvl i{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin-top:3px;overflow:hidden}
 .lvl u{display:block;height:100%;width:0;background:#ffd54a;text-decoration:none}
+.charImg{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;display:none;pointer-events:none}
+.pet.chrC .photo{display:none}
+.pet.chrC .charImg{display:block}
+.pet.chr .eyes,.pet.chr .eyesG,.pet.chr .mouth,.pet.chr .hair,.pet.chr .glasses,.pet.chr .hat{visibility:hidden!important}
+.acc{position:absolute;left:50%;top:90%;width:26cqw;transform:translate(-50%,-50%);display:none;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));z-index:6}
+.aura.k-fox{animation:foxGlow 1.6s ease-in-out infinite alternate}
+@keyframes foxGlow{from{filter:brightness(.95) saturate(1)}to{filter:brightness(1.3) saturate(1.25)}}
+.thumb.k-fox{background:#5a4a7a}
+.psbtn{position:absolute;left:10px;top:90px;z-index:9;background:rgba(0,0,0,.4);border:0;color:#fff;border-radius:12px;font-size:20px;width:40px;height:36px}
+.psbtn i{position:absolute;right:-3px;top:-3px;min-width:16px;height:16px;border-radius:8px;background:#ff4d4d;color:#fff;font:700 11px/16px sans-serif;font-style:normal;display:none}
+.ptabs{display:flex;gap:6px;margin:8px 0}
+.ptabs button{flex:1;border:0;border-radius:10px;padding:8px 2px;font-weight:700;background:#ece8ff;color:#333}
+.ptabs button.on{background:#7c5cff;color:#fff}
+.pbar{height:8px;border-radius:4px;background:#ddd;overflow:hidden;margin:4px 0}
+.pbar u{display:block;height:100%;background:#7c5cff;text-decoration:none}
+.prow{display:flex;gap:6px;align-items:stretch;margin:5px 0;font-size:13px}
+.prow>div{flex:1;background:#f3f0ff;border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px;justify-content:space-between}
+.prow>div.lv{flex:0 0 38px;align-items:center;justify-content:center;font-weight:800;background:#ddd6ff}
+.prow button{border:0;border-radius:8px;padding:5px;font-weight:700;background:#7c5cff;color:#fff}
+.prow .got{color:#2e9e4f;font-weight:700}
+.prow .no{opacity:.55}
+.vipc{background:linear-gradient(90deg,#ffe27a,#ffb347)!important;color:#5a3b00!important}
 .fxbar{position:absolute;right:10px;top:46px;z-index:9;display:flex;flex-direction:column;gap:4px;align-items:flex-end;pointer-events:none}
 .fxbar span{background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-size:13px;padding:3px 10px;border-radius:12px}
 /* журнал */
@@ -198,6 +220,7 @@ html,body,#pet{touch-action:manipulation}
 
   <div class="stage" id="stage">
     <div class="win"></div><div class="clicks" id="clicks">👆 0</div><div class="fxbar" id="fxbar"></div>
+    <button class="psbtn" id="passBtn" aria-label="Юнус-пасс">🎫<i id="passDot"></i></button>
     <div class="lvl" id="lvl"><b id="lvlN">Ур. 0</b><i><u id="lvlBar"></u></i></div>
     <div class="bubble" id="bubble"></div>
     <button class="gear" id="gearBtn" aria-label="Меню">⚙️</button>
@@ -211,12 +234,14 @@ html,body,#pet{touch-action:manipulation}
       <div class="pet" id="pet">
         <div class="ring" id="ring"><div class="rw"><img class="rr" data-src="aura-d9r.png" alt=""><img class="rh" data-src="aura-d9h1.png" style="left:11.67%;top:4.88%;width:26.53%" alt=""><img class="rh" data-src="aura-d9h2.png" style="left:63.47%;top:5.31%;width:26.81%" alt=""><img class="rh" data-src="aura-d9h3.png" style="left:11.53%;top:58.97%;width:26.81%" alt=""><img class="rh" data-src="aura-d9h4.png" style="left:63.19%;top:57.10%;width:27.08%" alt=""></div></div>
         <div class="photo" id="photo"><img src="yunus.jpg" alt="Юнус" draggable="false"></div>
+        <img class="charImg" id="charImg" alt="">
         <div class="eyes" id="eyes"><img class="eo" src="sharingan-open.png" alt=""><img class="ec" src="sharingan-closed.png" alt=""></div>
         <div class="eyesG" id="eyesG"><img class="eo" src="gold-open.png" alt=""><img class="ec" src="gold-closed.png" alt=""></div>
         <div class="mouth" id="mouth"></div>
         <img class="hair" id="hair" alt="">
         <div class="glasses" id="glasses"></div>
         <div class="hat" id="hat"></div>
+        <img class="acc" id="accImg" alt="">
       </div>
     </div>
     <div id="night"></div>
@@ -241,7 +266,7 @@ html,body,#pet{touch-action:manipulation}
     <h1>Мой Говорящий<br>Юнус</h1>
     <div class="pic"><img src="yunus.jpg" alt=""></div>
     <button id="startBtn">▶ Играть</button>
-    <div class="ver">версия 1.2.0</div>
+    <div class="ver">версия 1.2.1</div>
   </div>
 </div>
 
@@ -252,7 +277,7 @@ const cl = v => Math.max(0, Math.min(100, v));
 
 /* ---------- состояние ---------- */
 const KEY = 'moy_govoryashchiy_yunus_v1';
-const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, bg:'', ownedBg:{}, fx:{}, lvl:0, xp:0, reb:0, chakra:0, skills:{}, seenVer:'', t:Date.now()};
+const S = {hunger:70, fun:70, clean:70, energy:80, coins:20, owned:{}, hat:'', glasses:'', sleeping:false, best:0, clicks:0, aura:'', ownedAuras:{}, hair:'', ownedHair:{}, name:'Юнус', codes:[], eyes:'', ownedEyes:{}, bg:'', ownedBg:{}, fx:{}, lvl:0, xp:0, reb:0, chakra:0, skills:{}, vip:false, inv:{}, ownedChar:{}, char:'', ownedAcc:{}, acc:'', keep:{}, pass:{start:0, xp:0, claimed:{}, day:'', tasks:[]}, seenVer:'', t:Date.now()};
 const DEF = JSON.parse(JSON.stringify(S));
 try { const r = JSON.parse(localStorage.getItem(KEY)); if (r) Object.assign(S, r); } catch (e) {}
 S.sleeping = false;
@@ -282,14 +307,16 @@ const FOODS = [
   {e:'🍔', n:'Бургер', h:35, f:2,  c:-5, p:20},
   {e:'🍰', n:'Тортик', h:18, f:10, c:-4, p:30},
   {e:'🥛', n:'Молоко', h:10, f:0,  c:0,  p:5},
-  {e:'🐔', n:'Чикенбургер', img:'food-burger.png', h:45, f:10, c:-4, en:0,  p:100, fx:'dbl', tag:'👆 клики ×2 · 5 мин', say:'Сила! Клики считаются вдвое! 💪'},
-  {e:'🥤', n:'Кола',        img:'food-cola.png',   h:5,  f:15, c:0,  en:25, p:150, fx:'cheap', tag:'🪙 в 2 раза легче · 5 мин', say:'Заряд! Монеты теперь даются легче ⚡'},
-  {e:'🍗', n:'Крылышко KFC',  img:'food-wing.png',   h:12, f:5,  c:-2, p:75,  fx:'xp2', ms:120000, tag:'⭐ опыт ×2 · 2 мин', say:'Опыт ×2! ⭐'},
-  {e:'🪣', n:'Баскет крылышек', img:'food-bucket.png', h:35, f:10, c:-5, p:300, fx:'xp4', ms:300000, tag:'⭐ опыт ×4 · 5 мин', say:'Опыт ×4! ⭐⭐'}
+  {id:'chick', e:'🐔', n:'Чикенбургер', img:'food-burger.png', h:45, f:10, c:-4, en:0,  p:100, fx:'dbl', tag:'👆 клики ×2 · 5 мин', say:'Сила! Клики считаются вдвое! 💪'},
+  {id:'cola', e:'🥤', n:'Кола',        img:'food-cola.png',   h:5,  f:15, c:0,  en:25, p:150, fx:'cheap', tag:'🪙 в 2 раза легче · 5 мин', say:'Заряд! Монеты теперь даются легче ⚡'},
+  {id:'wing', e:'🍗', n:'Крылышко KFC',  img:'food-wing.png',   h:12, f:5,  c:-2, p:75,  fx:'xp2', ms:120000, tag:'⭐ опыт ×2 · 2 мин', say:'Опыт ×2! ⭐'},
+  {id:'bucket', e:'🪣', n:'Баскет крылышек', img:'food-bucket.png', h:35, f:10, c:-5, p:300, fx:'xp4', ms:300000, tag:'⭐ опыт ×4 · 5 мин', say:'Опыт ×4! ⭐⭐'},
+  {id:'marm', e:'🍬', n:'Мармеладка', h:10, f:10, c:10, en:10, p:55, ev:true, tag:'🍬 +10% ко всему · ивент', say:'Мармелодность! 🍬'},
+  {id:'fog', e:'🍪', n:'Пряник из Фоговой Лагуны', h:8, f:4, c:0, p:67, fx:'fog', ms:300000, tag:'😴 сон на 50% короче · 5 мин', say:'Сладких снов! 🍪'}
 ];
 const FX_MS = 300000;
 const fxLeft = k => Math.max(0, ((S.fx || {})[k] || 0) - Date.now());
-const FXN = {dbl:'👆 ×2', cheap:'🪙 ÷2', xp2:'⭐ ×2', xp4:'⭐ ×4'};
+const FXN = {dbl:'👆 ×2', cheap:'🪙 ÷2', xp2:'⭐ ×2', xp4:'⭐ ×4', fog:'🍪 сон'};
 function renderFx() {
   const el = $('fxbar'); if (!el) return;
   el.innerHTML = Object.keys(FXN).filter(k => fxLeft(k) > 0).map(k => {
@@ -306,16 +333,16 @@ const XPT = [0, 15, 19, 22];
 const MAXLVL = 30, XPR = {hunger: 5, fun: 1, clean: 5, energy: 10};
 let prevSt = null, inXp = false;
 function xpMult() { return fxLeft('xp4') > 0 ? 4 : fxLeft('xp2') > 0 ? 2 : 1; }
-function gainXp(a) {
+function gainXp(a, raw) {
   if (S.lvl >= MAXLVL) { S.xp = 0; return; }
-  S.xp += a * xpMult();
-  let up = 0, coins = 0;
+  const e = raw ? a : a * xpMult(); S.xp += e; tk('xpgain', e);
+  let up = 0, coins = 0, lv0 = S.lvl;
   while (S.lvl < MAXLVL && S.xp >= XPT[S.lvl + 1]) {
     const need = XPT[S.lvl + 1]; S.xp -= need; S.lvl++;
     const m = Math.round(need / S.lvl / 4); S.coins += m; coins += m; up = S.lvl;
   }
   if (S.lvl >= MAXLVL) S.xp = 0;
-  if (up) say('Уровень ' + up + '! +' + coins + ' 🪙', {voice: true});
+  if (up) { say('Уровень ' + up + '! +' + coins + ' 🪙', {voice: true}); tk('lvl', S.lvl - lv0); }
 }
 function xpWatch() {
   if (inXp) return; inXp = true;
@@ -333,6 +360,194 @@ function renderLvl() {
   $('lvlN').textContent = (S.lvl >= MAXLVL ? 'Ур. ' + S.lvl + ' MAX' : 'Ур. ' + S.lvl) + (S.reb ? ' · ♻' + S.reb : '');
   $('lvlBar').style.width = (S.lvl >= MAXLVL ? 100 : Math.min(100, S.xp / need * 100)) + '%';
 }
+/* ---------- Юнус-пасс ---------- */
+const DAY = 86400000, SEASON_DAYS = 29, VIP_PRICE = 17170;
+const SEASON_NAME = 'Юнус порванные штанишки в поисках Мармелодности';
+function seasonEnd() { return (S.pass.start || 0) + SEASON_DAYS * DAY; }
+function seasonActive() { return Date.now() < seasonEnd(); }
+const PNEED = [0], PCUM = [0];
+(function () { let v = 100; for (let L = 1; L <= 20; L++) { if (L > 1) v *= L >= 14 ? 1.2 : 1.3; PNEED[L] = Math.round(v); PCUM[L] = PCUM[L - 1] + PNEED[L]; } })();
+function passLevel() { let L = 0; while (L < 20 && S.pass.xp >= PCUM[L + 1]) L++; return L; }
+const CHARS = {
+  shtany:  {n:'Юнус порванные штанишки', img:'char-shtany.jpg',  t:'photo'},
+  fog:     {n:'Фог Юнус',                img:'char-fog.png',     t:'cut'},
+  papus:   {n:'Папус Юнус',              img:'char-papus.jpg',   t:'photo'},
+  hamster: {n:'Хомяк тупой Юнус тап-тап', img:'char-hamster.png', t:'cut'}
+};
+const ACCS = {coin: {n:'Юнус-коин', img:'acc-coin.png'}};
+const REW = {
+  1:{f:{coins:50}, v:{char:'shtany'}}, 2:{f:{oo:100}, v:{oo:500}}, 3:{f:{clicks:1500}, v:{clicks:4000}},
+  4:{f:{food:['bucket',1]}, v:{food:['bucket',3]}}, 5:{f:{hair:'teto'}, v:{aura:'fox'}},
+  6:{f:{coins:200}, v:{chakra:2}}, 7:{f:{coins:350}, v:{coins:500}}, 8:{f:{oo:200}, v:{oo:500}},
+  9:{f:{coins:100}, v:{coins:250}}, 10:{f:{food:['marm',10]}, v:{char:'fog'}},
+  11:{f:{food:['wing',3]}, v:{bg:'valley'}}, 12:{f:{food:['fog',2]}, v:{food:['fog',5]}},
+  13:{f:{food:['marm',5]}, v:{food:['marm',10]}}, 14:{f:{food:['cola',2]}, v:{coins:1000}},
+  15:{f:{char:'papus'}, v:{char:'papus'}}, 16:{v:{coins:500}}, 17:{v:{coins:500}}, 18:{v:{coins:500}},
+  19:{v:{acc:'coin'}}, 20:{v:{char:'hamster'}}
+};
+function rewText(r) {
+  const o = [];
+  if (r.coins) o.push('🪙 ' + r.coins);
+  if (r.oo) o.push('⭐ ' + r.oo + ' ОО');
+  if (r.clicks) o.push('👆 ' + fmt(r.clicks));
+  if (r.chakra) o.push('✨ ' + r.chakra + ' чакры');
+  if (r.food) { const f = FOODS.find(x => x.id === r.food[0]); o.push(f.e + ' ' + f.n + ' ×' + r.food[1]); }
+  if (r.hair) o.push('Причёска «' + HAIRS.find(x => x.id === r.hair).n + '»');
+  if (r.aura) o.push('Аура «' + AURAS.find(x => x.id === r.aura).n + '»');
+  if (r.bg) o.push('Фон «' + BGS.find(x => x.id === r.bg).n + '»');
+  if (r.char) o.push('Персонаж «' + CHARS[r.char].n + '»');
+  if (r.acc) o.push('Аксессуар «' + ACCS[r.acc].n + '»');
+  return o.join(', ');
+}
+function grant(r) {
+  if (r.coins) S.coins += r.coins;
+  if (r.oo) gainXp(r.oo, true);
+  if (r.clicks) S.clicks = (S.clicks || 0) + r.clicks;
+  if (r.chakra) S.chakra += r.chakra;
+  if (r.food) S.inv[r.food[0]] = (S.inv[r.food[0]] || 0) + r.food[1];
+  if (r.hair) { S.ownedHair[r.hair] = true; S.keep['hair:' + r.hair] = 1; }
+  if (r.aura) { S.ownedAuras[r.aura] = true; S.keep['aura:' + r.aura] = 1; }
+  if (r.bg) { S.ownedBg[r.bg] = true; S.keep['bg:' + r.bg] = 1; }
+  if (r.char) S.ownedChar[r.char] = true;
+  if (r.acc) S.ownedAcc[r.acc] = true;
+}
+const PTASKS = [
+  {id:'w5',  m:'wash',     n:5,    xp:150,  t:'Помыться 5 раз'},
+  {id:'w10', m:'wash',     n:10,   xp:250,  t:'Помыться 10 раз'},
+  {id:'e10', m:'eat',      n:10,   xp:200,  t:'Поесть 10 раз'},
+  {id:'e20', m:'eat',      n:20,   xp:300,  t:'Поесть 20 раз'},
+  {id:'s5',  m:'sleepsec', n:300,  xp:250,  t:'Поспать 5 минут реального времени'},
+  {id:'s2',  m:'streak',   n:120,  xp:350,  t:'Спать непрерывно 2 минуты'},
+  {id:'lv1', m:'lvl',      n:1,    xp:500,  t:'Повысить уровень Юнуса 1 раз'},
+  {id:'g10', m:'games',    n:10,   xp:400,  t:'Сыграть в «Лови еду» 10 раз'},
+  {id:'g30', m:'maxscore', n:31,   xp:400,  t:'Набрать в «Лови еду» более 30 очков'},
+  {id:'fx3', m:'fx',       n:3,    xp:350,  t:'Иметь 3 активных эффекта еды'},
+  {id:'rb',  m:'reb',      n:1,    xp:1000, t:'Переродиться 1 раз'},
+  {id:'x250',m:'xpgain',   n:250,  xp:150,  t:'Получить 250 опыта'},
+  {id:'x500',m:'xpgain',   n:500,  xp:300,  t:'Получить 500 опыта'},
+  {id:'c1k', m:'clicks',   n:1000, xp:100,  t:'Натапать 1000 кликов'},
+  {id:'c5k', m:'clicks',   n:5000, xp:250,  t:'Натапать 5000 кликов'},
+  {id:'cm',  m:'cpm',      n:1000, xp:400,  t:'Натапать 1000 кликов за минуту'}
+];
+let sleepStreak = 0, cpmB = [];
+function dayKey() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function pickTasks(n, exclude) {
+  const pool = PTASKS.filter(x => !exclude.includes(x.id)).sort(() => Math.random() - .5);
+  return pool.slice(0, n).map(x => ({id:x.id, p:0, d:false}));
+}
+function passDaily() {
+  if (!S.pass.start) S.pass.start = Date.now();
+  if (!seasonActive()) return;
+  const want = S.vip ? 10 : 7;
+  if (S.pass.day !== dayKey()) { S.pass.day = dayKey(); S.pass.tasks = pickTasks(want, []); }
+  else if (S.pass.tasks.length < want) S.pass.tasks = S.pass.tasks.concat(pickTasks(want - S.pass.tasks.length, S.pass.tasks.map(t => t.id)));
+}
+function addPassXp(n) {
+  const l0 = passLevel(); S.pass.xp += n; const l1 = passLevel();
+  if (l1 > l0) say('Юнус-пасс: уровень ' + l1 + '! 🎫', {voice: true});
+}
+function tk(m, n, mode) {
+  if (!S.pass || !S.pass.tasks || !seasonActive()) return;
+  S.pass.tasks.forEach(t => {
+    const d = PTASKS.find(x => x.id === t.id);
+    if (!d || t.d || d.m !== m) return;
+    t.p = mode === 'max' ? Math.max(t.p, n) : t.p + n;
+    if (t.p >= d.n) { t.p = d.n; t.d = true; addPassXp(d.xp); say('Задание пасса выполнено: +' + d.xp + ' ОП', {}); }
+  });
+}
+function cpmAdd(n) {
+  const now = Math.floor(Date.now() / 1000); cpmB.push([now, n]);
+  cpmB = cpmB.filter(x => x[0] > now - 60);
+  tk('cpm', cpmB.reduce((s, x) => s + x[1], 0), 'max');
+}
+function sleepTaskPending() {
+  return seasonActive() && S.pass.tasks.some(t => !t.d && ['sleepsec', 'streak'].includes((PTASKS.find(x => x.id === t.id) || {}).m));
+}
+function claimable() {
+  const L = passLevel(); let c = 0;
+  for (let i = 1; i <= L; i++) ['f', 'v'].forEach(tr => { if (REW[i][tr] && !S.pass.claimed[tr + i] && (tr === 'f' || S.vip)) c++; });
+  return c;
+}
+function renderPassBadge() {
+  const c = claimable(), d = $('passDot'); if (!d) return;
+  d.style.display = c ? 'block' : 'none'; d.textContent = c;
+}
+function claimPass(key, quiet) {
+  const tr = key[0], L = +key.slice(1), r = REW[L] && REW[L][tr];
+  if (!r || S.pass.claimed[key] || passLevel() < L || (tr === 'v' && !S.vip)) return false;
+  grant(r); S.pass.claimed[key] = 1;
+  if (!quiet) { say('Получено: ' + rewText(r), {voice: true}); render(); save(); openPass(); }
+  return true;
+}
+function claimAll() {
+  let n = 0;
+  for (let i = 1; i <= passLevel(); i++) ['f', 'v'].forEach(tr => { if (claimPass(tr + i, true)) n++; });
+  if (n) { say('Награды получены: ' + n + ' 🎁', {voice: true}); render(); save(); }
+  openPass();
+}
+function buyVip() {
+  if (S.vip) return;
+  if (!seasonActive()) { say('Сезон уже закончился', {}); return; }
+  if (S.coins < VIP_PRICE) { say('Не хватает монет! Нужно 🪙 ' + fmt(VIP_PRICE), {}); return; }
+  S.coins -= VIP_PRICE; S.vip = true; passDaily();
+  say('V-I-P активирован! 👑 +3 задания в день', {voice: true}); render(); save();
+  if (passOpen) openPass(); else openShop(true);
+}
+let passTab = 'tasks', passOpen = false;
+function setChar(id) {
+  if (id && !S.ownedChar[id]) return;
+  S.char = (S.char === id) ? '' : id; render(); save(); openPass();
+}
+function setAcc(id) {
+  if (!S.ownedAcc[id]) return;
+  S.acc = (S.acc === id) ? '' : id; render(); save(); openPass();
+}
+function renderChar() {
+  const c = S.char && S.ownedChar[S.char] ? CHARS[S.char] : null, pet = $('pet');
+  pet.classList.toggle('chr', !!c); pet.classList.toggle('chrC', !!(c && c.t === 'cut'));
+  const ph = $('photo').firstChild, want = (c && c.t === 'photo') ? c.img : 'yunus.jpg';
+  if (ph.getAttribute('src') !== want) ph.setAttribute('src', want);
+  const ci = $('charImg');
+  if (c && c.t === 'cut' && ci.getAttribute('src') !== c.img) ci.setAttribute('src', c.img);
+  const a = S.acc && S.ownedAcc[S.acc] ? ACCS[S.acc] : null, ai = $('accImg');
+  ai.style.display = a ? 'block' : 'none';
+  if (a && ai.getAttribute('src') !== a.img) ai.setAttribute('src', a.img);
+}
+function openPass(tab) {
+  if (tab) passTab = tab; passOpen = true;
+  const L = passLevel(), left = Math.max(0, seasonEnd() - Date.now()), days = Math.ceil(left / DAY);
+  const into = S.pass.xp - PCUM[L], need = L >= 20 ? 0 : PNEED[L + 1];
+  let body = `<div style="font-weight:800">Сезон 1 · «${SEASON_NAME}»</div>
+    <div style="font-size:13px;opacity:.75">${seasonActive() ? 'Осталось дней: ' + days : 'Сезон завершён — можно забрать полученные награды'}</div>
+    <div style="margin-top:6px"><b>Уровень ЮП: ${L}/20</b> ${L < 20 ? '· ' + into + '/' + need + ' ОП' : '· максимум'}</div>
+    <div class="pbar"><u style="width:${L >= 20 ? 100 : Math.min(100, into / need * 100)}%"></u></div>
+    ${S.vip ? '<div class="vipc" style="padding:6px 10px;border-radius:10px;font-weight:800;text-align:center">👑 V-I-P активен</div>' : `<button class="it vipc" data-vip="1" style="width:100%;height:auto;aspect-ratio:auto;padding:10px;flex-direction:row;justify-content:center;font-weight:800;font-size:15px">👑 Купить V-I-P за 🪙 ${fmt(VIP_PRICE)}</button>`}
+    <div class="ptabs"><button data-pt="tasks" class="${passTab === 'tasks' ? 'on' : ''}">Задания</button><button data-pt="rew" class="${passTab === 'rew' ? 'on' : ''}">Награды${claimable() ? ' (' + claimable() + ')' : ''}</button><button data-pt="ward" class="${passTab === 'ward' ? 'on' : ''}">Гардероб</button></div>`;
+  if (passTab === 'tasks') {
+    body += '<div style="font-size:13px;opacity:.75;margin-bottom:4px">Опыт пасса (ОП) даётся только за задания. Новые задания каждый день' + (S.vip ? '' : ' (с V-I-P — на 3 больше)') + '.</div>';
+    body += S.pass.tasks.map(t => { const d = PTASKS.find(x => x.id === t.id); const lim = d.n; const shown = d.m === 'sleepsec' || d.m === 'streak' ? Math.floor(t.p) + ' с' : Math.floor(t.p) + '/' + lim;
+      return `<div class="prow"><div style="${t.d ? 'opacity:.6' : ''}"><b>${t.d ? '✓ ' : ''}${d.t}</b><div class="pbar"><u style="width:${Math.min(100, t.p / lim * 100)}%"></u></div><span style="font-size:12px">${shown} · +${d.xp} ОП</span></div></div>`; }).join('') || '<div>Заданий нет</div>';
+  } else if (passTab === 'rew') {
+    body += `<button class="it" data-pc="all" style="width:100%;height:auto;aspect-ratio:auto;padding:10px;flex-direction:row;justify-content:center;margin-bottom:6px;font-size:15px">🎁 Забрать всё доступное</button>`;
+    for (let i = 1; i <= 20; i++) {
+      const cell = tr => {
+        const r = REW[i][tr]; if (!r) return `<div class="no"><span>${i <= 15 ? '' : 'Только V-I-P'}</span></div>`;
+        const got = S.pass.claimed[tr + i], reach = L >= i, ok = reach && (tr === 'f' || S.vip);
+        return `<div class="${tr === 'v' ? 'vipc' : ''}"><span>${tr === 'v' ? '👑 ' : ''}${rewText(r)}</span>${got ? '<span class="got">✓ получено</span>' : ok ? `<button data-pc="${tr}${i}">Забрать</button>` : `<span class="no">${tr === 'v' && !S.vip ? '🔒 V-I-P' : '🔒 ур. ' + i}</span>`}</div>`;
+      };
+      body += `<div class="prow"><div class="lv">${i}</div>${cell('f')}${cell('v')}</div>`;
+    }
+  } else {
+    body += `<div class="sec">Персонажи</div><div class="grid"><button class="it ${!S.char ? 'on' : ''}" data-pw="char:"><span>🧑</span><small>Обычный Юнус</small><small><b>${!S.char ? 'Надето ✓' : 'Надеть'}</b></small></button>` +
+      Object.keys(CHARS).filter(k => S.ownedChar[k]).map(k => `<button class="it ${S.char === k ? 'on' : ''}" data-pw="char:${k}"><span class="thumb ht"><img src="${CHARS[k].img}" alt="" style="object-fit:contain"></span><small>${CHARS[k].n}</small><small><b>${S.char === k ? 'Надето ✓' : 'Надеть'}</b></small></button>`).join('') + '</div>';
+    const accs = Object.keys(ACCS).filter(k => S.ownedAcc[k]);
+    body += `<div class="sec">Аксессуары</div>` + (accs.length ? '<div class="grid">' + accs.map(k => `<button class="it ${S.acc === k ? 'on' : ''}" data-pw="acc:${k}"><span class="thumb ht"><img src="${ACCS[k].img}" alt=""></span><small>${ACCS[k].n}</small><small><b>${S.acc === k ? 'Надето ✓' : 'Надеть'}</b></small></button>`).join('') + '</div>' : '<div style="opacity:.7;font-size:13px">Пока пусто</div>');
+    body += '<div style="opacity:.7;font-size:12px;margin-top:6px">Причёски, ауры и фоны из пасса лежат в магазине.</div>';
+  }
+  const st = $('sheetBody').scrollTop;
+  openSheet('Юнус-пасс', body);
+  if (passTab === 'rew' || passTab === 'tasks') $('sheetBody').scrollTop = st;
+}
 /* ---------- перерождение ---------- */
 const REBS = [{l:5, c:3000, m:200}, {l:9, c:9000, m:500}, {l:13, c:15000, m:850}, {l:16, c:17500, m:1000}, {l:20, c:20000, m:1250}];
 const SKILLS = [
@@ -345,8 +560,9 @@ function sk(id) { return (S.skills || {})[id] || 0; }
 function doReborn() {
   const r = REBS[S.reb];
   if (!r || S.lvl < r.l || (S.clicks || 0) < r.c || S.coins < r.m) return;
-  const keep = {clicks: S.clicks - r.c, codes: S.codes, name: S.name, seenVer: S.seenVer, best: S.best, reb: S.reb + 1, chakra: S.chakra + 2, skills: S.skills || {}};
-  const ca = {}, ch = {}, ci = {}, ce = {};
+  const keep = {clicks: S.clicks - r.c, codes: S.codes, name: S.name, seenVer: S.seenVer, best: S.best, reb: S.reb + 1, chakra: S.chakra + 2, skills: S.skills || {}, pass: S.pass, vip: S.vip, inv: S.inv, ownedChar: S.ownedChar, char: S.char, ownedAcc: S.ownedAcc, acc: S.acc, keep: S.keep || {}};
+  const ca = {}, ch = {}, ci = {}, ce = {}, cb = {};
+  Object.keys(S.keep || {}).forEach(k => { const [kk, id] = k.split(':'); if (kk === 'aura') ca[id] = true; else if (kk === 'hair') ch[id] = true; else if (kk === 'bg') cb[id] = true; });
   Object.values(CODES).concat(Object.values(HCODES)).forEach(x => (x.unlock || []).forEach(u => {
     const [k, id] = u.split(':');
     if (k === 'aura' && S.ownedAuras[id]) ca[id] = true;
@@ -355,7 +571,8 @@ function doReborn() {
     else if (k === 'eyes' && S.ownedEyes[id]) ce[id] = true;
   }));
   Object.keys(S).forEach(k => delete S[k]);
-  Object.assign(S, JSON.parse(JSON.stringify(DEF)), keep, {ownedAuras: ca, ownedHair: ch, owned: ci, ownedEyes: ce, t: Date.now()});
+  Object.assign(S, JSON.parse(JSON.stringify(DEF)), keep, {ownedAuras: ca, ownedHair: ch, owned: ci, ownedEyes: ce, ownedBg: cb, t: Date.now()});
+  tk('reb', 1);
   prevSt = null; curAura = ''; updateZ(); render(); save();
   closeSheet(); say('Я переродился! +2 очка чакры ✨', {voice: true});
 }
@@ -389,7 +606,8 @@ const BGS = [
   {id:'school', n:'Класс',     p:500},
   {id:'sauna',  n:'Сауна',     p:1000},
   {id:'kfc',    n:'KFC',       p:2000},
-  {id:'galaxy', n:'Галактика', p:2500}
+  {id:'galaxy', n:'Галактика', p:2500},
+  {id:'valley', n:'Друнная долина', p:0, secret:true}
 ];
 function renderBg() {
   const b = BGS.find(x => x.id === S.bg && S.ownedBg[x.id]), st = $('stage');
@@ -424,7 +642,7 @@ function render() {
   $('glasses').textContent = S.glasses ? (HATS.find(h => h.id === S.glasses) || {}).e || '' : '';
   $('app').classList.toggle('sleeping', S.sleeping);
   $('sleepBtn').innerHTML = S.sleeping ? '☀️<small>Будить</small>' : '😴<small>Спать</small>';
-  updateClicks(); renderAura(); renderHair(); renderEyes(); $('nameplate').textContent = S.name;
+  updateClicks(); renderAura(); renderHair(); renderEyes(); renderChar(); renderPassBadge(); $('nameplate').textContent = S.name;
 }
 
 /* ---------- речь ---------- */
@@ -478,7 +696,8 @@ const AURAS = [
   {id:'plasma', n:'Зелёная плазма', secret:true, h:1.15, w:170},
   {id:'blood',  n:'Кроваво-чёрная', req:100000, h:1.4},
   {id:'sun',    n:'Солнечный взрыв', req:111111, h:1.2, b:15},
-  {id:'d9',     n:'Золотое кольцо', secret:true, custom:true}
+  {id:'d9',     n:'Золотое кольцо', secret:true, custom:true},
+  {id:'fox',    n:'Девятихвостый лис', secret:true, h:.85, w:150}
 ];
 const fmt = n => Number(n).toLocaleString('ru-RU');
 function updateClicks() { $('clicks').textContent = '👆 ' + fmt(S.clicks || 0); }
@@ -513,7 +732,8 @@ const HAIRS = [
   {id:'h1', n:'Оранжевая',    p:650,  w:108, t:1,  x:0},
   {id:'h2', n:'Белая',        p:400,  w:106, hh:51, t:-7, x:0},
   {id:'h3', n:'Бирюзовая',    p:800,  w:108, t:1,  x:0},
-  {id:'h4', n:'Красно-белая', p:1000, w:98,  t:-4, x:0}
+  {id:'h4', n:'Красно-белая', p:1000, w:98,  t:-4, x:0},
+  {id:'teto', n:'Волосы Тето', p:0, secret:true, w:96, t:-9, x:0}
 ];
 let curHair = '';
 function renderHair() {
@@ -529,7 +749,7 @@ function renderHair() {
 /* ---------- кличка и коды ---------- */
 // Коды: 'слово': {coins:100, clicks:500, unlock:['aura:gold','hair:h1','item:crown'], msg:'Текст'}
 // Сейчас кодов нет — добавляются сюда позже.
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 const CODES = {
   'bosskfc13-56': {unlock:['item:boss'], msg:'Шапка «Босс КФС» открыта! Она в магазине, раздел «Одежда»'},
   'sharingan44':  {unlock:['eyes:sharingan'], msg:'Шаринган открыт! Он в магазине, раздел «Глаза»'},
@@ -555,6 +775,12 @@ function renderEyes() {
   $('eyesG').style.display = on('gold') ? 'block' : 'none';
 }
 const CHANGELOG = [
+  {v:'1.2.1', items:[
+    'Юнус-пасс (ЮП): сезон 1 «Юнус порванные штанишки в поисках Мармелодности» — 29 дней с первого входа после обновления',
+    'Ежедневные задания (7 в день, 10 с V-I-P) дают опыт пасса; 20 уровней наград: 15 бесплатных и 20 для V-I-P',
+    'V-I-P билет: покупается в пассе или в магазине за 17 170 монет',
+    'Новая еда: Мармеладка (55 монет, +10% ко всем шкалам, только в ивент) и Пряник из Фоговой Лагуны (67 монет, сон короче на 50%)',
+    'Персонажи и аксессуар из пасса — вкладка «Гардероб»']},
   {v:'1.2.0', items:[
     'Уровни Юнуса (до 30): опыт даётся за веселье, еду, мытьё и сон, за каждый новый уровень — монеты',
     'Перерождения (5 штук): за каждое — 2 очка Юнусной чакры, навыки в древе навыков',
@@ -618,6 +844,7 @@ function redeem(raw) {
 }
 function openMenu() {
   openSheet('Меню', `<button class="it" id="logBtn" style="flex-direction:row;font-size:16px;gap:8px;width:100%;justify-content:center;margin-bottom:6px">📜 Что нового в обновлении</button>
+    <button class="it" id="passBtn2" style="flex-direction:row;font-size:16px;gap:8px;width:100%;justify-content:center;margin-bottom:6px">🎫 Юнус-пасс</button>
     <button class="it" id="rebBtn" style="flex-direction:row;font-size:16px;gap:8px;width:100%;justify-content:center;margin-bottom:6px">🌀 Перерождение</button>
     <div class="sec">Кличка</div>
     <div class="row"><input id="nin" maxlength="16" placeholder="Как назовём?" autocomplete="off"><button id="nsave">✔</button></div>
@@ -629,6 +856,7 @@ function openMenu() {
   $('nin').value = S.name;
   $('logBtn').onclick = openChangelog;
   $('rebBtn').onclick = () => openReborn(false);
+  $('passBtn2').onclick = () => openPass('tasks');
   const saveName = () => {
     S.name = cleanName($('nin').value); render(); save(); closeSheet();
     say('Теперь меня зовут ' + S.name + '!', {voice: true});
@@ -652,7 +880,7 @@ function poke(ev) {
   const prev = S.clicks || 0, add = (1 + sk('click')) * (fxLeft('dbl') > 0 ? 2 : 1);
   S.clicks = prev + add;
   const crossed = n => Math.floor(S.clicks / n) > Math.floor(prev / n);
-  updateClicks(); tapFx(ev);
+  updateClicks(); tapFx(ev); tk('clicks', add); cpmAdd(add);
   if (S.aura) $('aura').animate([{transform: 'scale(1)'}, {transform: 'scale(1.07)'}, {transform: 'scale(1)'}], {duration: 220});
   const unlocked = AURAS.find(x => x.req > prev && x.req <= S.clicks);
   if (S.sleeping) { toggleSleep(); say('Ой! Я же спал...', {voice: true}); return; }
@@ -671,9 +899,12 @@ function feed(i) {
   if (S.sleeping) return say('Тсс... я сплю', {});
   if (busy) return;
   const f = FOODS[i];
+  if (f.ev && !seasonActive()) { closeSheet(); return say('Ивент уже закончился', {}); }
   if (S.hunger > 96) { closeSheet(); return say('Я уже наелся!', {voice: true}); }
-  if (S.coins < f.p) { say('Не хватает монет! 🪙 ' + f.p, {}); return; }
-  S.coins -= f.p; render();
+  const free = f.id && (S.inv[f.id] || 0) > 0;
+  if (!free && S.coins < f.p) { say('Не хватает монет! 🪙 ' + f.p, {}); return; }
+  if (free) S.inv[f.id]--; else S.coins -= f.p;
+  render();
   busy = true; closeSheet();
   const st = stageRect(), mr = $('mouth').getBoundingClientRect();
   const el = document.createElement('div');
@@ -690,6 +921,7 @@ function feed(i) {
         $('mouth').className = 'mouth';
         S.hunger = cl(S.hunger + f.h / (1 + .2 * sk('belly'))); S.fun = cl(S.fun + f.f); S.clean = cl(S.clean + f.c); if (f.en) S.energy = cl(S.energy + f.en);
         if (f.fx) { S.fx = S.fx || {}; S.fx[f.fx] = Date.now() + fxLeft(f.fx) + (f.ms || FX_MS); }
+        tk('eat', 1); if (f.fx) tk('fx', Object.keys(FXN).filter(k => fxLeft(k) > 0).length, 'max');
         busy = false; say(f.say || rnd(['Ням-ням!', 'Вкуснятина!', 'Спасибо!']), {voice: true}); render(); save();
       }, 1200);
     };
@@ -710,7 +942,7 @@ function wash() {
     addFx(d, 2400);
   }
   say('Бульк-бульк!', {});
-  setTimeout(() => { S.clean = cl(S.clean + 45); busy = false; say('Чистенький! Спасибо!', {voice: true}); render(); }, 1700);
+  setTimeout(() => { S.clean = cl(S.clean + 45); tk('wash', 1); busy = false; say('Чистенький! Спасибо!', {voice: true}); render(); }, 1700);
 }
 
 function toggleSleep() {
@@ -722,11 +954,11 @@ function toggleSleep() {
 
 /* ---------- шторки ---------- */
 function openSheet(title, html) { $('sheetTitle').textContent = title; $('sheetBody').innerHTML = html; $('sheet').classList.add('open'); }
-function closeSheet() { $('sheet').classList.remove('open'); }
+function closeSheet() { $('sheet').classList.remove('open'); passOpen = false; }
 $('sheetX').onclick = closeSheet;
 
 function openFood() {
-  openSheet('Чем покормим? (у тебя 🪙 ' + S.coins + ')', '<div class="grid">' + FOODS.map((f, i) => `<button class="it ${S.coins < f.p ? 'lock' : ''}" data-food="${i}"><span>${f.img ? `<img class="fi" src="${f.img}" alt="">` : f.e}</span><small>${f.n}</small><small><b>🪙 ${f.p}</b></small>${f.tag ? `<small>${f.tag}</small>` : ''}</button>`).join('') + '</div>');
+  openSheet('Чем покормим? (у тебя 🪙 ' + S.coins + ')', '<div class="grid">' + FOODS.map((f, i) => { if (f.ev && !seasonActive()) return ''; const inv = f.id ? (S.inv[f.id] || 0) : 0; return `<button class="it ${(!inv && S.coins < f.p) ? 'lock' : ''}" data-food="${i}"><span>${f.img ? `<img class="fi" src="${f.img}" alt="">` : f.e}</span><small>${f.n}</small><small><b>${inv ? '🎁 ×' + inv + ' бесплатно' : '🪙 ' + f.p}</b></small>${f.tag ? `<small>${f.tag}</small>` : ''}</button>`; }).join('') + '</div>');
 }
 function openTalk() {
   const chips = ['Привет!', 'Как дела?', 'Ты классный!', 'Давай дружить', 'Я люблю математику'];
@@ -748,7 +980,7 @@ function openShop(keep) {
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : '🪙 ' + x.p;
     return `<button class="it ${on ? 'on' : ''}" data-shop="${x.id}">${x.img ? `<span class="thumb ht"><img src="${x.img}" alt=""></span>` : `<span>${x.e}</span>`}<small>${x.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
-  const gh = HAIRS.map(x => {
+  const gh = HAIRS.filter(x => !x.secret || S.ownedHair[x.id]).map(x => {
     const owned = S.ownedHair[x.id], on = S.hair === x.id;
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : '🪙 ' + x.p;
     return `<button class="it ${on ? 'on' : ''}" data-hair="${x.id}"><span class="thumb ht"><img src="hair-${x.id}.png" alt=""></span><small>${x.n}</small><small><b>${lab}</b></small></button>`;
@@ -763,12 +995,12 @@ function openShop(keep) {
     const lab = on ? 'Надето ✓' : owned ? 'Надеть' : ok ? 'Купить' : '🔒 ' + fmt(a.req) + ' 👆';
     return `<button class="it ${on ? 'on' : ''} ${(!owned && !ok) ? 'lock' : ''}" data-aura="${a.id}"><span class="thumb k-${a.id}"><img src="aura-${a.id}.png" alt=""></span><small>${a.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
-  const gb = '<button class="it ' + (!S.bg ? 'on' : '') + '" data-bg=""><span class="thumb bt none"></span><small>Обычный</small><small><b>' + (!S.bg ? 'Выбран ✓' : 'Выбрать') + '</b></small></button>' + BGS.map(x => {
+  const gb = '<button class="it ' + (!S.bg ? 'on' : '') + '" data-bg=""><span class="thumb bt none"></span><small>Обычный</small><small><b>' + (!S.bg ? 'Выбран ✓' : 'Выбрать') + '</b></small></button>' + BGS.filter(x => !x.secret || S.ownedBg[x.id]).map(x => {
     const owned = S.ownedBg[x.id], on = S.bg === x.id;
     const lab = on ? 'Выбран ✓' : owned ? 'Выбрать' : '🪙 ' + x.p;
     return `<button class="it ${on ? 'on' : ''}" data-bg="${x.id}"><span class="thumb bt" style="background-image:url(bg-${x.id}.jpg)"></span><small>${x.n}</small><small><b>${lab}</b></small></button>`;
   }).join('');
-  openSheet('Магазин', `<div class="sec">Одежда — за монеты (у тебя 🪙 ${S.coins})</div><div class="grid">${g}</div>
+  openSheet('Магазин', `${S.vip ? '' : `<button class="it vipc" data-vip="1" style="width:100%;flex-direction:row;justify-content:center;font-weight:800;margin-bottom:6px">👑 V-I-P билет Юнус-пасса — 🪙 ${fmt(VIP_PRICE)}</button>`}<div class="sec">Одежда — за монеты (у тебя 🪙 ${S.coins})</div><div class="grid">${g}</div>
     <div class="sec">Причёски — за монеты</div><div class="grid">${gh}</div>
     ${ge ? `<div class="sec">Глаза</div><div class="grid">${ge}</div>` : ''}
     <div class="sec">Фоны — за монеты</div><div class="grid">${gb}</div>
@@ -826,7 +1058,12 @@ $('sheetBody').addEventListener('click', e => {
   else if (t.dataset.hair) shopHair(t.dataset.hair);
   else if (t.dataset.eyes) shopEyes(t.dataset.eyes);
   else if (t.dataset.bg !== undefined) shopBg(t.dataset.bg);
+  else if (t.dataset.vip) buyVip();
+  else if (t.dataset.pt) openPass(t.dataset.pt);
+  else if (t.dataset.pc) { if (t.dataset.pc === 'all') claimAll(); else claimPass(t.dataset.pc); }
+  else if (t.dataset.pw) { const [k, id] = t.dataset.pw.split(':'); if (k === 'char') setChar(id); else setAcc(id); }
 });
+$('passBtn').addEventListener('click', () => openPass('tasks'));
 document.querySelector('.actions').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const a = b.dataset.act;
@@ -887,6 +1124,7 @@ function endGame() {
   $('game').innerHTML = ''; $('hud').hidden = true; $('app').classList.remove('gaming');
   S.coins += sc; S.fun = cl(S.fun + Math.min(45, sc * 2.5)); S.hunger = cl(S.hunger - 5); S.energy = cl(S.energy - 8);
   const rec = sc > (S.best || 0); if (rec) S.best = sc;
+  tk('games', 1); tk('maxscore', sc, 'max');
   say(rec && sc > 0 ? `Новый рекорд: ${sc}! +${sc} 🪙` : `Ура! Поймали ${sc}. +${sc} 🪙`, {voice: true});
   render(); save();
 }
@@ -895,15 +1133,16 @@ function endGame() {
 let ticks = 0;
 function tick(dt) {
   if (S.sleeping) {
-    S.energy = cl(S.energy + dt * 1.5 / (1 - .2 * sk('sleep'))); S.hunger = cl(S.hunger - dt * .04);
+    S.energy = cl(S.energy + dt * 1.5 / ((1 - .2 * sk('sleep')) * (fxLeft('fog') > 0 ? .5 : 1))); sleepStreak += dt; tk('sleepsec', dt); tk('streak', sleepStreak, 'max'); S.hunger = cl(S.hunger - dt * .04);
     S.fun = cl(S.fun - dt * .03); S.clean = cl(S.clean - dt * .03);
-    if (S.energy >= 100) toggleSleep();
+    if (S.energy >= 100 && !sleepTaskPending()) toggleSleep();
   } else {
+    sleepStreak = 0;
     S.hunger = cl(S.hunger - dt * .13); S.fun = cl(S.fun - dt * .11);
     S.clean = cl(S.clean - dt * .07); S.energy = cl(S.energy - dt * .07);
   }
 }
-setInterval(() => { tick(1); render(); if (++ticks % 5 === 0) save(); }, 1000);
+setInterval(() => { tick(1); passDaily(); render(); if (++ticks % 5 === 0) save(); }, 1000);
 
 setInterval(() => {
   if (S.sleeping || busy || game || $('start').style.display === 'none' === false) return;
