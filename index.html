@@ -152,7 +152,7 @@ html,body,#pet{touch-action:manipulation}
 .lvl u{display:block;height:100%;width:0;background:#ffd54a;text-decoration:none}
 .charImg{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;display:none;pointer-events:none}
 .pet.chrC .photo{display:none}
-.pet.chrC .charImg{display:block}
+.pet.chrC .charImg{display:block;top:auto;bottom:7%;height:90%}
 .pet.chr .eyes,.pet.chr .eyesG,.pet.chr .mouth,.pet.chr .hair,.pet.chr .glasses,.pet.chr .hat{visibility:hidden!important}
 .acc{position:absolute;left:50%;top:90%;width:26cqw;transform:translate(-50%,-50%);display:none;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));z-index:6}
 .aura.k-fox{animation:foxGlow 1.6s ease-in-out infinite alternate}
@@ -369,7 +369,7 @@ const PNEED = [0], PCUM = [0];
 (function () { let v = 100; for (let L = 1; L <= 20; L++) { if (L > 1) v *= L >= 14 ? 1.2 : 1.3; PNEED[L] = Math.round(v); PCUM[L] = PCUM[L - 1] + PNEED[L]; } })();
 function passLevel() { let L = 0; while (L < 20 && S.pass.xp >= PCUM[L + 1]) L++; return L; }
 const CHARS = {
-  shtany:  {n:'Юнус порванные штанишки', img:'char-shtany.jpg',  t:'photo'},
+  shtany:  {n:'Юнус порванные штанишки', img:'char-shtany.png',  t:'cut'},
   fog:     {n:'Фог Юнус',                img:'char-fog.png',     t:'cut'},
   papus:   {n:'Папус Юнус',              img:'char-papus.jpg',   t:'photo'},
   hamster: {n:'Хомяк тупой Юнус тап-тап', img:'char-hamster.png', t:'cut'}
@@ -733,7 +733,7 @@ const HAIRS = [
   {id:'h2', n:'Белая',        p:400,  w:106, hh:51, t:-7, x:0},
   {id:'h3', n:'Бирюзовая',    p:800,  w:108, t:1,  x:0},
   {id:'h4', n:'Красно-белая', p:1000, w:98,  t:-4, x:0},
-  {id:'teto', n:'Волосы Тето', p:0, secret:true, w:96, t:-9, x:0}
+  {id:'teto', n:'Волосы Тето', p:0, secret:true, w:118, t:-17, x:0}
 ];
 let curHair = '';
 function renderHair() {
@@ -780,7 +780,8 @@ const CHANGELOG = [
     'Ежедневные задания (7 в день, 10 с V-I-P) дают опыт пасса; 20 уровней наград: 15 бесплатных и 20 для V-I-P',
     'V-I-P билет: покупается в пассе или в магазине за 17 170 монет',
     'Новая еда: Мармеладка (55 монет, +10% ко всем шкалам, только в ивент) и Пряник из Фоговой Лагуны (67 монет, сон короче на 50%)',
-    'Персонажи и аксессуар из пасса — вкладка «Гардероб»']},
+    'Персонажи и аксессуар из пасса — вкладка «Гардероб»',
+    'Патч 1: волосы Тето теперь закрывают всю голову, новый вид у «Юнус порванные штанишки»']},
   {v:'1.2.0', items:[
     'Уровни Юнуса (до 30): опыт даётся за веселье, еду, мытьё и сон, за каждый новый уровень — монеты',
     'Перерождения (5 штук): за каждое — 2 очка Юнусной чакры, навыки в древе навыков',
